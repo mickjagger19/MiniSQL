@@ -4,6 +4,7 @@
 
 
 #include "../header/Condition.h"
+
 bool Condition::ifRight(int content)
 {
     stringstream ss;

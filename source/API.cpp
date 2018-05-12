@@ -40,7 +40,8 @@ void API::tableDrop(string tableName)
     {
         //delete a table information
         cm->dropTable(tableName);
-        printf("Drop table %s successfully\n", tableName.c_str());
+
+        printf("Query OK, 0 rows affected ");
     }
 }
 
@@ -177,7 +178,7 @@ void API::tableCreate(string tableName, vector<Attribute>* attributeVector, stri
         //CatalogManager to create a table information
         cm->addTable(tableName, attributeVector, primaryKeyName, primaryKeyLocation);
 
-        printf("Create table %s successfully\n", tableName.c_str());
+        printf("Query OK, 0 rows affected ");
     }
 
     if (primaryKeyName != "")
@@ -362,7 +363,7 @@ void API::recordInsert(string tableName, vector<string>* recordContent)
     {
         recordIndexInsert(recordString, recordSize, &attributeVector, blockOffset);
         cm->insertRecord(tableName, 1);
-        printf("insert record into table %s successful\n", tableName.c_str());
+        printf("Query OK, 1 row affected ");
     }
     else
     {
@@ -427,7 +428,7 @@ void API::recordDelete(string tableName, vector<Condition>* conditionVector)
 
     //delete the number of record in in the table
     cm->deleteValue(tableName, num);
-    printf("delete %d record in table %s\n", num, tableName.c_str());
+    printf("Query OK,  %d row in table %s affected ", num, tableName.c_str());
 }
 
 /**

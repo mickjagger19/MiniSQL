@@ -13,7 +13,7 @@ class Condition
 
 public:
     const static int OPERATOR_EQUAL = 0; // "="
-    const static int OPERATOR_NOT_EQUAL = 1; // "<>"
+    const static int OPERATOR_NOT_EQUAL = 1; // "!="
     const static int OPERATOR_LESS = 2; // "<"
     const static int OPERATOR_MORE = 3; // ">"
     const static int OPERATOR_LESS_EQUAL = 4; // "<="

@@ -17,7 +17,7 @@ public:
     string fileName ;
     int interpreter(string s);
 
-    string getWord(string s, int *st);
+    string FetchWord(string s, int *st);
 
     Interpreter(){}
     ~Interpreter(){}
