@@ -19,6 +19,8 @@ int Interpreter::interpreter(string s)
     string word;
 
     word = getWord(s, &tmp);
+    //新建表
+    //create table tablename (attributename type,attributename type,...);
     if (strcmp(word.c_str(), "create") == 0)
     {
         word = getWord(s,&tmp);
@@ -32,14 +34,14 @@ int Interpreter::interpreter(string s)
                 tableName = word;
             else
             {
-                cout<<"Syntax Error for no table name"<<endl;
+                cout<<"Syntax Error!No Table Name Found"<<endl;
                 return 0;
             }
 
             word = getWord(s,&tmp);
             if (word.empty() || strcmp(word.c_str(),"(") != 0)
             {
-                cout<<"Error in syntax!"<<endl;
+                cout<<"Syntax Error!"<<endl;
                 return 0;
             }
             else				// deal with attribute list
@@ -215,7 +217,8 @@ int Interpreter::interpreter(string s)
     }
 
 
-
+    //查询
+    //select * from tablename where condition
     else if(strcmp(word.c_str(), "select")==0)
     {
         vector<string> attrSelected;
@@ -248,7 +251,8 @@ int Interpreter::interpreter(string s)
             return 0;
         }
 
-        // condition extricate
+        // where后的条件
+        //condition
         word = getWord(s,&tmp);
         if (word.empty())	// without condition
         {
@@ -299,7 +303,7 @@ int Interpreter::interpreter(string s)
                         throw SyntaxException();
                     word = getWord(s,&tmp);
                 } 	catch (SyntaxException&) {
-                    cout<<"Syntax Error!"<<endl;
+                    cout<<"Syntax Error! Please Check Your Condition After 'where'"<<endl;
                     return 0;
                 }
             }
@@ -313,7 +317,7 @@ int Interpreter::interpreter(string s)
     }
 
 
-
+    //删除表 drop
     else if (strcmp(word.c_str(), "drop")==0)
     {
         word = getWord(s,&tmp);
@@ -328,7 +332,7 @@ int Interpreter::interpreter(string s)
             }
             else
             {
-                cout<<"Error in syntax!"<<endl;
+                cout<<"Syntax Error!"<<endl;
                 return 1;
             }
         }
@@ -342,25 +346,26 @@ int Interpreter::interpreter(string s)
             }
             else
             {
-                cout<<"Error in syntax!"<<endl;
+                cout<<"Syntax Error!"<<endl;
                 return 1;
             }
         }
         else
         {
-            cout<<"Error in syntax!"<<endl;
+            cout<<"Syntax Error!"<<endl;
             return 0;
         }
     }
 
-
+    //删除元组
+    // delete from tablename where condition
     else if (strcmp(word.c_str(), "delete")==0)
     {
         string tableName = "";
         word = getWord(s,&tmp);
         if (strcmp(word.c_str(), "from") != 0)
         {
-            cout<<"Error in syntax!"<<endl;
+            cout<<"Syntax Error!"<<endl;
             return 0;
         }
 
@@ -369,13 +374,13 @@ int Interpreter::interpreter(string s)
             tableName = word;
         else
         {
-            cout<<"Error in syntax!"<<endl;
+            cout<<"Syntax Error!"<<endl;
             return 0;
         }
 
-        // condition extricate
+        // 条件判断
         word = getWord(s,&tmp);
-        if (word.empty())	// without condition
+        if (word.empty())	//默认情况，无条件
         {
             ap->recordDelete(tableName);
             return 1;
@@ -429,13 +434,15 @@ int Interpreter::interpreter(string s)
         }
     }
 
-
+    //插入数据
+    //insert into tablename values (value[1],value[2]...)
 
     else if (strcmp(word.c_str(), "insert") == 0)
     {
         string tableName = "";
         std::vector<string> valueVector;
         word = getWord(s,&tmp);
+        //接下来检查insert语法
         try {
             if (strcmp(word.c_str(),"into") != 0)
                 throw SyntaxException();
