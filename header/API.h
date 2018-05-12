@@ -40,8 +40,8 @@ public:
     void indexDrop(string indexName);
     void indexCreate(string indexName, string tableName, string attributeName);
 
-    void recordShow(string tableName, vector<string>* attributeNameVector = NULL);
-    void recordShow(string tableName,  vector<string>* attributeNameVector, vector<Condition>* conditionVector);
+    void SelectShow(string tableName, vector<string>* attributeNameVector = NULL);
+    void SelectShow(string tableName,  vector<string>* attributeNameVector, vector<Condition>* conditionVector);
 
     void recordInsert(string tableName,vector<string>* recordContent);
 

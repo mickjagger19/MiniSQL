@@ -29,6 +29,7 @@ int Interpreter::interpreter(string s)
         {
             string primaryKey = "";
             string tableName = "";
+            //tablename
             word = FetchWord(s,&tmp);
             if (!word.empty())			//create table tablename
                 tableName = word;
@@ -44,17 +45,18 @@ int Interpreter::interpreter(string s)
                 cout<<"Syntax Error!"<<endl;
                 return 0;
             }
-            else				// deal with attribute list
+            else
+                //处理属性名
             {
                 word = FetchWord(s,&tmp);
-                //attribute name
+                //属性名
                 std::vector<Attribute> attributeVector;
                 while (!word.empty() && strcmp(word.c_str(),"primary") != 0 && strcmp(word.c_str(),")") != 0)
                 {
                     string attributeName = word;
                     int type = 0;
                     bool ifUnique = false;
-                    // deal with the data type
+                    //处理属性类型
                     word = FetchWord(s,&tmp);
                     if (strcmp(word.c_str(), "int") == 0)
                         type = 0;
@@ -257,10 +259,10 @@ int Interpreter::interpreter(string s)
         if (word.empty())	// without condition
         {
             if(attrSelected.size()==0){
-                ap->recordShow(tableName);
+                ap->SelectShow(tableName);
             }
             else
-                ap->recordShow(tableName,&attrSelected);
+                ap->SelectShow(tableName,&attrSelected);
             return 1;
         }
         else if (strcmp(word.c_str(),"where") == 0)
@@ -308,9 +310,9 @@ int Interpreter::interpreter(string s)
                 }
             }
             if(attrSelected.size()==0)
-                ap->recordShow(tableName,NULL,&conditionVector);
+                ap->SelectShow(tableName,NULL,&conditionVector);
             else
-                ap->recordShow(tableName, &attrSelected,&conditionVector);
+                ap->SelectShow(tableName, &attrSelected,&conditionVector);
 
             return 1;
         }
@@ -461,7 +463,7 @@ int Interpreter::interpreter(string s)
             {
                 valueVector.push_back(word);
                 word = FetchWord(s,&tmp);
-                if (strcmp(word.c_str(),",") == 0)  // bug here
+                if (strcmp(word.c_str(),",") == 0)
                     word = FetchWord(s,&tmp);
             }
             if (strcmp(word.c_str(),")") != 0)

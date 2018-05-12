@@ -20,7 +20,9 @@
 #define INDEX_FILE 10
 
 
-CatalogManager::CatalogManager() {}
+CatalogManager::CatalogManager() {
+    // TODO Auto-generated destructor stub
+}
 
 
 
@@ -265,6 +267,8 @@ int CatalogManager::deleteValue(string tableName, int deleteNum)
     }
     return 0;
 }
+
+
 int CatalogManager::insertRecord(string tableName, int recordNum)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
@@ -361,6 +365,8 @@ int CatalogManager::setIndexOnAttribute(string tableName,string AttributeName,st
     }
     return 0;
 }
+
+
 int CatalogManager::attributeGet(string tableName, vector<Attribute>* attributeVector)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
@@ -370,6 +376,8 @@ int CatalogManager::attributeGet(string tableName, vector<Attribute>* attributeV
     {
 
         char* addressBegin = bm.get_content(*btmp) ;
+
+
         addressBegin += 1+sizeof(int);
         int size = *addressBegin;
         addressBegin++;

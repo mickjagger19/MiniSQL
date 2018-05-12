@@ -9,13 +9,12 @@
 #include "../header/RecordManager.h"
 
 
-/**
- *
- * create a table
- * @param tableName: name of table
- */
+//建立表
+//create table
+
 int RecordManager::tableCreate(string tableName)
 {
+    //存放 table数据 文件名
     string tableFileName = tableFileNameGet(tableName);
 
     FILE *fp;
@@ -28,11 +27,8 @@ int RecordManager::tableCreate(string tableName)
     return 1;
 }
 
-/**
- *
- * drop a table
- * @param tableName: name of table
- */
+//删除表
+//drop table
 int RecordManager::tableDrop(string tableName)
 {
     string tableFileName = tableFileNameGet(tableName);
@@ -44,11 +40,8 @@ int RecordManager::tableDrop(string tableName)
     return 1;
 }
 
-/**
- *
- * create a index
- * @param indexName: name of index
- */
+//建立索引
+///create index
 int RecordManager::indexCreate(string indexName)
 {
     string indexFileName = indexFileNameGet(indexName);
@@ -63,11 +56,9 @@ int RecordManager::indexCreate(string indexName)
     return 1;
 }
 
-/**
- *
- * drop a index
- * @param indexName: name of index
- */
+//删除索引
+//drop index
+
 int RecordManager::indexDrop(string indexName)
 {
     string indexFileName = indexFileNameGet(indexName);
@@ -79,14 +70,9 @@ int RecordManager::indexDrop(string indexName)
     return 1;
 }
 
-/**
- *
- * insert a record to table
- * @param tableName: name of table
- * @param record: value of record
- * @param recordSize: size of the record
- * @return the position of block in the file(-1 represent error)
- */
+//插入记录
+//insert record
+
 int RecordManager::recordInsert(string tableName,char* record, int recordSize)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -554,6 +540,7 @@ void RecordManager::recordPrint(char* recordBegin, int recordSize, vector<Attrib
     char *contentBegin = recordBegin;
     for(int i = 0; i < attributeVector->size(); i++)
     {
+        cout<<"| ";
         type = (*attributeVector)[i].type;
         typeSize = api->typeSizeGet(type);
 
@@ -564,23 +551,36 @@ void RecordManager::recordPrint(char* recordBegin, int recordSize, vector<Attrib
 
         for(int j = 0; j < (*attributeNameVector).size(); j++)
         {
-            if ((*attributeNameVector)[j] == (*attributeVector)[i].name)
-            {
+
+            if ((*attributeNameVector)[j] == (*attributeVector)[i].name) {
                 contentPrint(content, type);
+                int length=0;
+                while (content[length++]!='\0') {};
+                length--;
+//                cout << "length" << length ;
+                int k;
+                length=(*attributeVector)[i].name.length()*3-2-length;
+                for (k = 0 ; k <= length ; k++) {
+                    cout << " ";
+                }
                 break;
             }
+
         }
 
+
+
+
         contentBegin += typeSize;
+
     }
+    cout<<"|\n";
+
+
 }
 
-/**
- *
- * print value of content
- * @param content: point to content
- * @param type: type of content
- */
+//打印元组值
+
 void RecordManager::contentPrint(char * content, int type)
 {
     if (type == Attribute::TYPE_INT)
@@ -653,5 +653,5 @@ string RecordManager::indexFileNameGet(string indexName)
 string RecordManager::tableFileNameGet(string tableName)
 {
     string tmp = "";
-    return tmp + "TABLE_FILE_" + tableName;
+    return  tmp + "TABLE_FILE_" + tableName;
 }

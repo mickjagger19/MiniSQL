@@ -15,11 +15,9 @@
 CatalogManager *cm;
 IndexManager* im;
 
-/**
- *
- * drop a table
- * @param tableName: name of table
- */
+//删除表
+//drop table
+
 void API::tableDrop(string tableName)
 {
     if (!tableExist(tableName)) return;
@@ -41,7 +39,7 @@ void API::tableDrop(string tableName)
         //delete a table information
         cm->dropTable(tableName);
 
-        printf("Query OK, 0 rows affected ");
+        printf("Query OK, 0 rows affected\n");
     }
 }
 
@@ -97,6 +95,12 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
     if (!tableExist(tableName)) return;
 
     vector<Attribute> attributeVector;
+
+
+
+
+
+
     cm->attributeGet(tableName, &attributeVector);
     int i;
     int type = 0;
@@ -178,7 +182,7 @@ void API::tableCreate(string tableName, vector<Attribute>* attributeVector, stri
         //CatalogManager to create a table information
         cm->addTable(tableName, attributeVector, primaryKeyName, primaryKeyLocation);
 
-        printf("Query OK, 0 rows affected ");
+        printf("Query OK, 0 rows affected\n");
     }
 
     if (primaryKeyName != "")
@@ -195,10 +199,10 @@ void API::tableCreate(string tableName, vector<Attribute>* attributeVector, stri
  * @param tableName: name of table
  * @param attributeNameVector: vector of name of attribute
  */
-void API::recordShow(string tableName, vector<string>* attributeNameVector)
+void API::SelectShow(string tableName, vector<string>* attributeNameVector)
 {
     vector<Condition> conditionVector;
-    recordShow(tableName, attributeNameVector, &conditionVector);
+    SelectShow(tableName, attributeNameVector, &conditionVector);
 }
 
 /**
@@ -208,12 +212,13 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector)
  * @param attributeNameVector: vector of name of attribute
  * @param conditionVector: vector of condition
  */
-void API::recordShow(string tableName, vector<string>* attributeNameVector, vector<Condition>* conditionVector)
+void API::SelectShow(string tableName, vector<string>* attributeNameVector, vector<Condition>* conditionVector)
 {
     if (cm->findTable(tableName) == TABLE_FILE)
     {
         int num = 0;
         vector<Attribute> attributeVector;
+
         attributeGet(tableName, &attributeVector);
 
         vector<string> allAttributeName;
@@ -231,8 +236,8 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
 
         for (string name : (*attributeNameVector))
         {
-            int i = 0;
-            for (i = 0; i < attributeVector.size(); i++)
+            int i;
+            for ( i = 0; i < attributeVector.size(); i++)
             {
                 if (attributeVector[i].name == name)
                 {
@@ -246,8 +251,10 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
                 cout << "ERROR 1054 (42S22):Unknown column '" + name + "' in 'field list' ";
                 return;
             }
-            else  tableAttributePrint(attributeNameVector);
+
         }
+
+        tableAttributePrint(attributeNameVector);
 
         int blockOffset = -1;
         if (conditionVector != NULL)
@@ -282,7 +289,6 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
         }
         else
         {
-
             //find the block by index,search in the block
             num = rm->recordBlockShow(tableName, attributeNameVector, conditionVector, blockOffset);
         }
@@ -365,7 +371,7 @@ void API::recordInsert(string tableName, vector<string>* recordContent)
     {
         recordIndexInsert(recordString, recordSize, &attributeVector, blockOffset);
         cm->insertRecord(tableName, 1);
-        printf("Query OK, 1 row affected ");
+        printf("Query OK, 1 row affected\n");
     }
     else
     {
@@ -653,11 +659,41 @@ string API::primaryIndexNameGet(string tableName)
 
 void API::tableAttributePrint(vector<string>* attributeNameVector)
 {
-    int i = 0;
+    int i;
+    int AttributeSize=(*attributeNameVector).size();
+
+    for ( i = 0; i < AttributeSize; i++){
+        cout<<"+";
+
+        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*3 ; j++){
+            cout<<"-";
+        }
+    }
+    cout<<"+\n";
+
+
+
     for ( i = 0; i < (*attributeNameVector).size(); i++)
     {
+        cout<<"| ";
         printf("%s ", (*attributeNameVector)[i].c_str());
+        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*2-2 ; j++){
+            cout<<" ";
+        }
+
     }
+
+    cout<<"|\n";
+
+    for ( i = 0; i < AttributeSize; i++){
+        cout<<"+";
+
+        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*3 ; j++){
+            cout<<"-";
+        }
+    }
+    cout<<"+\n";
+
     if (i != 0)
         printf("\n");
 }
