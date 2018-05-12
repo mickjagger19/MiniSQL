@@ -131,7 +131,7 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
         int indexType = cm->getIndexType(indexName);
         if (indexType == -2)
         {
-            cout << "error";
+            cout << "Error";
             return;
         }
 
@@ -226,8 +226,8 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
             attributeNameVector = &allAttributeName;
         }
 
-        //print attribute name you want to show
-        tableAttributePrint(attributeNameVector);
+
+
 
         for (string name : (*attributeNameVector))
         {
@@ -242,9 +242,11 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
 
             if (i == attributeVector.size())
             {
-                cout << "the attribute which you want to print is not exist in the table" << endl;
+//                cout << "the attribute which you want to print is not exist in the table" << endl;
+                cout << "ERROR 1054 (42S22):Unknown column '" + name + "' in 'field list' ";
                 return;
             }
+            else  tableAttributePrint(attributeNameVector);
         }
 
         int blockOffset = -1;
@@ -267,7 +269,7 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
 
                 if (i == attributeVector.size())
                 {
-                    cout << "the attribute is not exist in the table" << endl;
+                    cout << "the attribute does not exist in the table" << endl;
                     return;
                 }
             }
@@ -285,7 +287,7 @@ void API::recordShow(string tableName, vector<string>* attributeNameVector, vect
             num = rm->recordBlockShow(tableName, attributeNameVector, conditionVector, blockOffset);
         }
 
-        printf("%d records selected\n", num);
+        printf("%d rows in set ", num);
     }
     else
     {
@@ -648,6 +650,7 @@ string API::primaryIndexNameGet(string tableName)
  * printe attribute name
  * @param attributeNameVector: the vector of attribute's name
  */
+
 void API::tableAttributePrint(vector<string>* attributeNameVector)
 {
     int i = 0;

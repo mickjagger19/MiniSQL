@@ -480,16 +480,19 @@ int Interpreter::interpreter(string s)
 
     else if (strcmp(word.c_str(), "commit") == 0)
     { return 1;}
-    else if (strcmp(word.c_str(), "execfile") == 0)
+
+    else if (strcmp(word.c_str(), "source") == 0)
     {
         fileName = FetchWord(s,&tmp);
-        cout<<"try to open "<<fileName<<"..."<<endl;
+//        cout<<"try to open "<<fileName<<"..."<<endl;
         return 2;
     }
     else
     {
         if(word != "")
-            cout<<"Error, command "<<word<<" not found"<<endl;
+//            ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 's fsd' at line 1
+//            cout<<"Error, command "<<word<<" not found"<<endl;
+            cout<<"ERROR 1064 (42000): You have an error in your MiniSQL syntax; check the readme.md for the right syntax to use near '"+ word+ "' at line 1"<<endl;
         return 0;
     }
     return 0;
