@@ -22,7 +22,7 @@ using namespace std;
 
 static BufferManager bm;
 //**********************TreeNode***************************//
-typedef int offsetNumber; // the value of the tree node
+typedef int offsetNumber; // 节点的值
 
 template <typename KeyType>
 class TreeNode{
@@ -48,9 +48,9 @@ public:
 public:
     bool isRoot();
     bool search(KeyType key,size_t &index);//search a key and return by the reference of a parameter
-    TreeNode* splite(KeyType &key);
-    size_t add(KeyType &key); //add the key in the branch and return the position
-    size_t add(KeyType &key,offsetNumber val); // add a key-value in the leaf node and return the position
+    TreeNode* split(KeyType &key);
+    size_t AddKey(KeyType &key); //add the key in the branch and return the position
+    size_t AddKey(KeyType &key,offsetNumber val); // add a key-value in the leaf node and return the position
     bool removeAt(size_t index);
 
 #ifdef _DEBUG
@@ -78,10 +78,10 @@ private:
 private:
     string fileName;
     Node root;
-    Node leafHead; // 叶子节点的头
-    size_t keyCount;
+    Node LeafHeader; // 叶子节点的头
+    size_t KeyCount;
     size_t level;
-    size_t nodeCount;
+    size_t NodeCount;
     fileNode* file;
     int keySize;
     int degree;
@@ -91,20 +91,20 @@ public:
     ~BPlusTree();
 
     offsetNumber search(KeyType& key);
-    bool insertKey(KeyType &key,offsetNumber val);
+    bool InsertKey(KeyType &key,offsetNumber val);
     bool deleteKey(KeyType &key);
 
     void dropTree(Node node);
 
-    void readFromDiskAll();
-    void writtenbackToDiskAll();
-    void readFromDisk(blockNode* btmp);
+    void LoadFromDiskAll();
+    void WriteAlltoDisk();
+    void LoadFromDisk(blockNode* btmp);
 
 private:
     void init_tree();
-    bool adjustAfterinsert(Node pNode);
-    bool adjustAfterDelete(Node pNode);
-    void findToLeaf(Node pNode,KeyType key,searchNodeParse &snp);
+    bool AdjustAfterInsert(Node pNode);
+    bool AdjustAfterDelete(Node pNode);
+    void FindKey(Node pNode,KeyType key,searchNodeParse &snp);
 
 //DEBUG
 #ifdef _DEBUG
@@ -156,14 +156,15 @@ bool TreeNode<KeyType>::isRoot()
 template <class KeyType>
 bool TreeNode<KeyType>::search(KeyType key,size_t &index)
 {
-    if(count == 0 ) // no values in the node
+    if(count == 0 )
+    //空节点，没有key
     {
         index = 0;
         return false;
     }
     else
     {
-        // test if key are beyond the area of the keys array
+        // 检查key是否在范围之外
         if(keys[count-1] < key)
         {
             index = count;
@@ -173,8 +174,9 @@ bool TreeNode<KeyType>::search(KeyType key,size_t &index)
         {
             index = 0;
             return false;
-        } // end of test
-        else if(count <= 20) // sequential search
+        }
+        else if(count <= 20)
+        //如果规模较小，就顺序查找
         {
             for(size_t i = 0;i < count;i ++)
             {
@@ -183,18 +185,15 @@ bool TreeNode<KeyType>::search(KeyType key,size_t &index)
                     index = i;
                     return true;
                 }
-                else if(keys[i] < key)
-                {
-                    continue;
-                }
                 else if(keys[i] > key)
                 {
                     index = i;
                     return false;
                 }
             }
-        } // end sequential search
-        else if(count > 20) // too many keys, binary search. 2* log(n,2) < (1+n)/2
+        }
+        //如果规模较大，就二分查找
+        else if(count > 20)
         {
             size_t left = 0, right = count - 1, pos = 0;
             while(right>left+1)
@@ -213,9 +212,9 @@ bool TreeNode<KeyType>::search(KeyType key,size_t &index)
                 {
                     right = pos;
                 }
-            } // end while
+            }
 
-            // right == left + 1
+
             if(keys[left] >= key)
             {
                 index = left;
@@ -231,7 +230,7 @@ bool TreeNode<KeyType>::search(KeyType key,size_t &index)
                 index = right ++;
                 return false;
             }
-        } // end binary search
+        }
     }
     return false;
 }
@@ -239,61 +238,70 @@ bool TreeNode<KeyType>::search(KeyType key,size_t &index)
 //把当前节点分成两个
 //KeyType & the key reference returns the key that will go to the upper level
 template <class KeyType>
-TreeNode<KeyType>* TreeNode<KeyType>::splite(KeyType &key)
+TreeNode<KeyType>* TreeNode<KeyType>::split(KeyType &key)
 {
-    size_t minmumNode = (degree - 1) / 2;
+    size_t MinDegree = (degree - 1) / 2;
     TreeNode* newNode = new TreeNode(degree,this->isLeaf);
-    if(newNode == NULL)
-    {
-        cout << "Problems in allocate momeory of TreeNode in splite node of " << key << endl;
-        exit(2);
-    }
+
 
     if(isLeaf) // 这是一个叶子
     {
-        key = keys[minmumNode + 1];
-        for(size_t i = minmumNode + 1;i < degree;i ++)
+        key = keys[MinDegree + 1];
+
+        //原叶子只剩MinDegree个key，其他的都给新节点
+        for(size_t i = MinDegree + 1;i < degree;i ++)
         {
-            newNode->keys[i-minmumNode-1] = keys[i];
+            newNode->keys[i-MinDegree-1] = keys[i];
             keys[i] = KeyType();
-            newNode->vals[i-minmumNode-1] = vals[i];
+            newNode->vals[i-MinDegree-1] = vals[i];
             vals[i] = offsetNumber();
         }
+
+        //新叶子按照顺序连在原叶子后面
         newNode->nextLeafNode = this->nextLeafNode;
         this->nextLeafNode = newNode;
 
         newNode->parent = this->parent;
-        newNode->count = minmumNode;
-        this->count = minmumNode + 1;
-    } // end leaf
-    else if(!isLeaf)
+        newNode->count = MinDegree;
+
+        //更新degree
+        this->count = MinDegree + 1;
+    }
+    else
     {
-        key = keys[minmumNode];
-        for(size_t i = minmumNode + 1;i < degree+1;i ++)
+        key = keys[MinDegree];
+
+        //给新节点分配孩子，原节点只剩1～MinDegree个孩子
+        for(size_t i = MinDegree + 1;i < degree+1; i++)
         {
-            newNode->childs[i-minmumNode-1] = this->childs[i];
-            newNode->childs[i-minmumNode-1]->parent = newNode;
+            newNode->childs[i-MinDegree-1] = this->childs[i];
+            newNode->childs[i-MinDegree-1]->parent = newNode;
             this->childs[i] = NULL;
         }
-        for(size_t i = minmumNode + 1;i < degree;i ++)
+
+        //给新节点分配key
+        for(size_t i = MinDegree + 1;i < degree; i++)
         {
-            newNode->keys[i-minmumNode-1] = this->keys[i];
+            newNode->keys[i-MinDegree-1] = this->keys[i];
             this->keys[i] = KeyType();
         }
-        this->keys[minmumNode] = KeyType();
+        this->keys[MinDegree] = KeyType();
         newNode->parent = this->parent;
-        newNode->count = minmumNode;
-        this->count = minmumNode;
+        newNode->count = MinDegree;
+        this->count = MinDegree;
     }
     return newNode;
 }
 
-//向节点中添加值，返回添加的值的位置
+
+//向节点中添加key，返回添加的值的位置
 
 template <class KeyType>
-size_t TreeNode<KeyType>::add(KeyType &key)
+size_t TreeNode<KeyType>::AddKey(KeyType &key)
 {
+
     if(count == 0)
+    //如果还没有key
     {
         keys[0] = key;
         count ++;
@@ -304,16 +312,19 @@ size_t TreeNode<KeyType>::add(KeyType &key)
         size_t index = 0;
         bool exist = search(key, index);
         if(exist)
+            //如果已经存在这个key
         {
             cout << "Error:In add(Keytype &key),key has already in the tree!" << endl;
             exit(3);
         }
         else
         {
+            //先将所有index后的key后移，再将新key插入到index位置
             for(size_t i = count;i > index;i --)
                 keys[i] = keys[i-1];
             keys[index] = key;
 
+            //同理，调整孩子
             for(size_t i = count + 1;i > index+1;i --)
                 childs[i] = childs[i-1];
             childs[index+1] = NULL;
@@ -328,7 +339,7 @@ size_t TreeNode<KeyType>::add(KeyType &key)
 //offsetNumber the value
 
 template <class KeyType>
-size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
+size_t TreeNode<KeyType>::AddKey(KeyType &key,offsetNumber val)
 {
     if(!isLeaf)
     {
@@ -336,6 +347,7 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
         return -1;
     }
     if(count == 0)
+    //同上，没有孩子
     {
         keys[0] = key;
         vals[0] = val;
@@ -344,7 +356,7 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
     }
     else
     {
-        size_t index = 0; // 记录树的位置
+        size_t index = 0; // key的插入位置
         bool exist = search(key, index);
         if(exist)
         {
@@ -353,6 +365,7 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
         }
         else
         {
+            //后移，插入
             for(size_t i = count;i > index;i --)
             {
                 keys[i] = keys[i-1];
@@ -366,12 +379,13 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
     }
 }
 
-//删除键值或键的孩子
+//删除键值或孩子
 //size_t the position to delete
 
 template <class KeyType>
 bool TreeNode<KeyType>::removeAt(size_t index)
 {
+    //如果key的位置超出范围
     if(index > count)
     {
         cout << "Error:In removeAt(size_t index), index is more than count!" << endl;
@@ -381,6 +395,7 @@ bool TreeNode<KeyType>::removeAt(size_t index)
     {
         if(isLeaf)
         {
+            //index后的key前移
             for(size_t i = index;i < count-1;i ++)
             {
                 keys[i] = keys[i+1];
@@ -391,6 +406,7 @@ bool TreeNode<KeyType>::removeAt(size_t index)
         }
         else
         {
+            //如果不是叶子，孩子和key都需要处理
             for(size_t i = index;i < count-1;i ++)
                 keys[i] = keys[i+1];
 
@@ -449,10 +465,10 @@ void TreeNode<KeyType>::debug_print()
 //构造器
 
 template <class KeyType>
-BPlusTree<KeyType>::BPlusTree(string m_name,int keysize,int m_degree):fileName(m_name),keyCount(0),level(0),nodeCount(0),root(NULL),leafHead(NULL),keySize(keysize),file(NULL),degree(m_degree)
+BPlusTree<KeyType>::BPlusTree(string m_name,int keysize,int m_degree):fileName(m_name),KeyCount(0),level(0),NodeCount(0),root(NULL),LeafHeader(NULL),keySize(keysize),file(NULL),degree(m_degree)
 {
     init_tree();
-    readFromDiskAll();
+    LoadFromDiskAll();
 }
 
 //析构器
@@ -460,7 +476,7 @@ template <class KeyType>
 BPlusTree<KeyType>:: ~BPlusTree()
 {
     dropTree(root);
-    keyCount = 0;
+    KeyCount = 0;
     root = NULL;
     level = 0;
 }
@@ -471,21 +487,23 @@ template <class KeyType>
 void BPlusTree<KeyType>::init_tree()
 {
     root = new TreeNode<KeyType>(degree,true);
-    keyCount = 0;
+    KeyCount = 0;
     level = 1;
-    nodeCount = 1;
-    leafHead = root;
+    NodeCount = 1;
+    LeafHeader = root;
 }
 
 //向叶子层搜索节点，以寻找包含值的节点
 
 template <class KeyType>
-void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp)
+void BPlusTree<KeyType>::FindKey(Node pNode,KeyType key,searchNodeParse & snp)
 {
     size_t index = 0;
-    if(pNode->search(key,index)) // 找节点中的值
+    if(pNode->search(key,index))
+    //如果
     {
         if(pNode->isLeaf)
+        //如果找到了叶子
         {
             snp.pNode = pNode;
             snp.index = index;
@@ -493,6 +511,7 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
         }
         else
         {
+            //向底层延伸一层，再一直找到最左边的孩子直至叶子
             pNode = pNode -> childs[index + 1];
             while(!pNode->isLeaf)
             {
@@ -514,7 +533,7 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
         }
         else
         {
-            findToLeaf(pNode->childs[index],key,snp);
+            FindKey(pNode->childs[index],key,snp);
         }
     }
 }
@@ -522,11 +541,11 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
 //在合适的位置添加值，再调整结构
 
 template <class KeyType>
-bool BPlusTree<KeyType>::insertKey(KeyType &key,offsetNumber val)
+bool BPlusTree<KeyType>::InsertKey(KeyType &key,offsetNumber val)
 {
     searchNodeParse snp;
     if(!root) init_tree();
-    findToLeaf(root,key,snp);
+    FindKey(root,key,snp);
     if(snp.ifFound)
     {
         cout << "Error:in insert key to index: the duplicated key!" << endl;
@@ -534,81 +553,80 @@ bool BPlusTree<KeyType>::insertKey(KeyType &key,offsetNumber val)
     }
     else
     {
-        snp.pNode->add(key,val);
+        snp.pNode->AddKey(key,val);
+        //如果已经满了,就在插入后进行调整
         if(snp.pNode->count == degree)
         {
-            adjustAfterinsert(snp.pNode);
+            AdjustAfterInsert(snp.pNode);
         }
-        keyCount ++;
+        KeyCount ++;
         return true;
     }
 }
 
-//添加后调整节点，递归调用
 
+
+//添加后调整节点，递归调用
 template <class KeyType>
-bool BPlusTree<KeyType>::adjustAfterinsert(Node pNode)
+bool BPlusTree<KeyType>::AdjustAfterInsert(Node pNode)
 {
     KeyType key;
-    Node newNode = pNode->splite(key);
-    nodeCount ++;
+    Node newNode = pNode->split(key);//NewNode是将节点分割后的两个节点中的右家电
+    NodeCount ++;
 
+    //如果当前节点是根，就生成新的根，root是新根，pNode和newNode是孩子
     if(pNode->isRoot())
     {
         Node root = new TreeNode<KeyType>(degree,false);
-        if(root == NULL)
-        {
-            cout << "Error: can not allocate memory for the new root in adjustAfterinsert" << endl;
-            exit(1);
-        }
-        else
-        {
-            level ++;
-            nodeCount ++;
-            this->root = root;
-            pNode->parent = root;
-            newNode->parent = root;
-            root->add(key);
-            root->childs[0] = pNode;
-            root->childs[1] = newNode;
-            return true;
-        }
+        level ++;
+        NodeCount ++;
+        this->root = root;
+        pNode->parent = root;
+        newNode->parent = root;
+        root->AddKey(key);
+        root->childs[0] = pNode;
+        root->childs[1] = newNode;
+        return true;
     }
     else
-        //如果不是节点
+        //如果不是根
     {
         Node parent = pNode->parent;
-        size_t index = parent->add(key);
+        size_t index = parent->AddKey(key);
 
+        //parent是新父亲，newNode是新孩子
         parent->childs[index+1] = newNode;
         newNode->parent = parent;
+
+        //分配完之后继续检查parent的状态
         if(parent->count == degree)
-            return adjustAfterinsert(parent);
+            return AdjustAfterInsert(parent);
 
         return true;
     }
 }
 
-//搜索树以寻找指定键值
+//搜索树以寻找指定key
 
 template <class KeyType>
 offsetNumber BPlusTree<KeyType>::search(KeyType& key)
 {
     if(!root) return -1;
     searchNodeParse snp;
-    findToLeaf(root, key, snp);
+    FindKey(root, key, snp);
     if(!snp.ifFound)
     {
         return -1; //没找到
     }
     else
+        //返回key
     {
         return snp.pNode->vals[snp.index];
     }
 
 }
 
-//删除指定键值，再调整结构
+//删除指定key，再调整结构
 
 template <class KeyType>
 bool BPlusTree<KeyType>::deleteKey(KeyType &key)
@@ -621,7 +639,7 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
     }
     else
     {
-        findToLeaf(root, key, snp);
+        FindKey(root, key, snp);
         if(!snp.ifFound)
         {
             cout << "ERROR: In deleteKey, no keys in the tree " << fileName << "!" << endl;
@@ -630,14 +648,16 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
         else
         {
             if(snp.pNode->isRoot())
+            //如果是根，就移除指定位置的key,再调整
             {
                 snp.pNode->removeAt(snp.index);
-                keyCount --;
-                return adjustAfterDelete(snp.pNode);
+                KeyCount --;
+                return AdjustAfterDelete(snp.pNode);
             }
             else
+                //如果不是根
             {
-                if(snp.index == 0 && leafHead != snp.pNode)
+                if(snp.index == 0 && LeafHeader != snp.pNode)
                 {
 
                     size_t index = 0;
@@ -658,15 +678,15 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
                     now_parent -> keys[index] = snp.pNode->keys[1];
 
                     snp.pNode->removeAt(snp.index);
-                    keyCount--;
-                    return adjustAfterDelete(snp.pNode);
+                    KeyCount--;
+                    return AdjustAfterDelete(snp.pNode);
 
                 }
                 else
                 {
                     snp.pNode->removeAt(snp.index);
-                    keyCount--;
-                    return adjustAfterDelete(snp.pNode);
+                    KeyCount--;
+                    return AdjustAfterDelete(snp.pNode);
                 }
             }
         }
@@ -676,7 +696,7 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
 //删除后调整结构，递归调用
 
 template <class KeyType>
-bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
+bool BPlusTree<KeyType>::AdjustAfterDelete(Node pNode)
 {
     size_t minmumKey = (degree - 1) / 2;
     if(((pNode->isLeaf)&&(pNode->count >= minmumKey)) || ((degree != 3)&&(!pNode->isLeaf)&&(pNode->count >= minmumKey - 1)) || ((degree ==3)&&(!pNode->isLeaf)&&(pNode->count < 0))) // do not need to adjust
@@ -695,9 +715,9 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
             {
                 delete pNode;
                 root = NULL;
-                leafHead = NULL;
+                LeafHeader = NULL;
                 level --;
-                nodeCount --;
+                NodeCount --;
             }
             else //根不是叶子
             {
@@ -705,7 +725,7 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                 root -> parent = NULL;
                 delete pNode;
                 level --;
-                nodeCount --;
+                NodeCount --;
             }
         }
     }
@@ -749,9 +769,9 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     brother->nextLeafNode = pNode->nextLeafNode;
 
                     delete pNode;
-                    nodeCount --;
+                    NodeCount --;
 
-                    return adjustAfterDelete(parent);
+                    return AdjustAfterDelete(parent);
                 }
 
             }
@@ -788,9 +808,9 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     pNode->count += brother->count;
                     pNode->nextLeafNode = brother->nextLeafNode;
                     delete brother;
-                    nodeCount --;
+                    NodeCount --;
 
-                    return adjustAfterDelete(parent);
+                    return AdjustAfterDelete(parent);
                 }
             }
 
@@ -846,9 +866,9 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
 
 
                     delete pNode;
-                    nodeCount --;
+                    NodeCount --;
 
-                    return adjustAfterDelete(parent);
+                    return AdjustAfterDelete(parent);
                 }
 
             }
@@ -901,9 +921,9 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
 
 
                     delete brother;
-                    nodeCount --;
+                    NodeCount --;
 
-                    return adjustAfterDelete(parent);
+                    return AdjustAfterDelete(parent);
 
                 }
 
@@ -930,17 +950,17 @@ void BPlusTree<KeyType>::dropTree(Node node)
         }
     }
     delete node;
-    nodeCount --;
+    NodeCount --;
     return;
 }
 
 //从磁盘读取整个树
 
 template <class KeyType>
-void BPlusTree<KeyType>::readFromDiskAll()
+void BPlusTree<KeyType>::LoadFromDiskAll()
 {
     file = bm.getFile(fileName.c_str());
-    blockNode* btmp = bm.getBlockHead(file);
+    blockNode* btmp = bm.GetBlockHeader(file);
     while (true)
     {
         if (btmp == NULL)
@@ -948,7 +968,7 @@ void BPlusTree<KeyType>::readFromDiskAll()
             return;
         }
 
-        readFromDisk(btmp);
+        LoadFromDisk(btmp);
         if(btmp->ifbottom) break;
         btmp = bm.getNextBlock(file, btmp);
     }
@@ -958,7 +978,7 @@ void BPlusTree<KeyType>::readFromDiskAll()
 //从磁盘读取一个节点
 
 template <class KeyType>
-void BPlusTree<KeyType>::readFromDisk(blockNode* btmp)
+void BPlusTree<KeyType>::LoadFromDisk(blockNode* btmp)
 {
     int valueSize = sizeof(offsetNumber);
     char* indexBegin = bm.get_content(*btmp);
@@ -967,11 +987,11 @@ void BPlusTree<KeyType>::readFromDisk(blockNode* btmp)
     offsetNumber value;
 
     while(valueBegin - bm.get_content(*btmp) < bm.get_usingSize(*btmp))
-        // there are available position in the block
+        //在Block中还有可用的位置
     {
         key = *(KeyType*)indexBegin;
         value = *(offsetNumber*)valueBegin;
-        insertKey(key, value);
+        InsertKey(key, value);
         valueBegin += keySize + valueSize;
         indexBegin += keySize + valueSize;
     }
@@ -981,23 +1001,23 @@ void BPlusTree<KeyType>::readFromDisk(blockNode* btmp)
 //把整个树存放到磁盘
 
 template <class KeyType>
-void BPlusTree<KeyType>::writtenbackToDiskAll()
+void BPlusTree<KeyType>::WriteAlltoDisk()
 {
-    blockNode* btmp = bm.getBlockHead(file);
-    Node ntmp = leafHead;
+    blockNode* btmp = bm.GetBlockHeader(file);
+    Node ntmp = LeafHeader;
     int valueSize = sizeof(offsetNumber);
     while(ntmp != NULL)
     {
-        bm.set_usingSize(*btmp, 0);
-        bm.set_dirty(*btmp);
+        bm.SetUsedSize(*btmp, 0);
+        bm.SetModified(*btmp);
         for(int i = 0;i < ntmp->count;i ++)
         {
             char* key = (char*)&(ntmp->keys[i]);
             char* value = (char*)&(ntmp->vals[i]);
             memcpy(bm.get_content(*btmp)+bm.get_usingSize(*btmp),key,keySize);
-            bm.set_usingSize(*btmp, bm.get_usingSize(*btmp) + keySize);
+            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + keySize);
             memcpy(bm.get_content(*btmp)+bm.get_usingSize(*btmp),value,valueSize);
-            bm.set_usingSize(*btmp, bm.get_usingSize(*btmp) + valueSize);
+            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + valueSize);
         }
 
         btmp = bm.getNextBlock(file, btmp);
@@ -1007,8 +1027,8 @@ void BPlusTree<KeyType>::writtenbackToDiskAll()
     {
         if(btmp->ifbottom)
             break;
-        bm.set_usingSize(*btmp, 0);
-        bm.set_dirty(*btmp);
+        bm.SetUsedSize(*btmp, 0);
+        bm.SetModified(*btmp);
         btmp = bm.getNextBlock(file, btmp);
     }
 
@@ -1020,7 +1040,7 @@ template <class KeyType>
 void BPlusTree<KeyType>::debug_print()
 {
     cout << "############DEBUG FOR THE TREE############" << endl;
-    cout << "name:" << fileName << " root:" << (void*)root << " leafHead:" << (void * )leafHead << " keycount:" << keyCount << " level:" << level << " nodeCount:" << nodeCount << endl;
+    cout << "name:" << fileName << " root:" << (void*)root << " LeafHeader:" << (void * )LeafHeader << " KeyCount:" << KeyCount << " level:" << level << " NodeCount:" << NodeCount << endl;
 
     if(root)
         debug_print_node(root);

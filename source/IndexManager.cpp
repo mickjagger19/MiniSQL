@@ -40,7 +40,7 @@ IndexManager::~IndexManager()
     {
         if(itInt->second)
         {
-            itInt -> second->writtenbackToDiskAll();
+            itInt -> second->WriteAlltoDisk();
             delete itInt->second;
         }
     }
@@ -48,7 +48,7 @@ IndexManager::~IndexManager()
     {
         if(itString->second)
         {
-            itString ->second-> writtenbackToDiskAll();
+            itString ->second-> WriteAlltoDisk();
             delete itString->second;
         }
     }
@@ -56,7 +56,7 @@ IndexManager::~IndexManager()
     {
         if(itFloat->second)
         {
-            itFloat ->second-> writtenbackToDiskAll();
+            itFloat ->second-> WriteAlltoDisk();
             delete itFloat->second;
         }
     }
@@ -200,7 +200,7 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
         }
         else
         {
-            itInt->second->insertKey(kt.intTmp,blockOffset);
+            itInt->second->InsertKey(kt.intTmp,blockOffset);
         }
     }
     else if(type == TYPE_FLOAT)
@@ -213,7 +213,7 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
         }
         else
         {
-            itFloat->second->insertKey(kt.floatTmp,blockOffset);
+            itFloat->second->InsertKey(kt.floatTmp,blockOffset);
 
         }
     }
@@ -227,7 +227,7 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
         }
         else
         {
-            itString->second->insertKey(key,blockOffset);
+            itString->second->InsertKey(key,blockOffset);
         }
     }
 }

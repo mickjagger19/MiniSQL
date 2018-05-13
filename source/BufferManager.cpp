@@ -43,7 +43,7 @@ BufferManager::BufferManager():total_block(0),total_file(0),fileHead(NULL)
 //析构器
 BufferManager::~BufferManager()
 {
-    writtenBackToDiskAll();
+    WriteAlltoDisk();
     for (int i = 0; i < MAX_FILE_NUM; i ++)
     {
         delete [] file_pool[i].fileName;
@@ -71,7 +71,7 @@ void BufferManager::init_block(blockNode &block)
     size_t init_usage = 0;
     memcpy(block.address, (char*)&init_usage, sizeof(size_t)); // set the block head
     block.using_size = sizeof(size_t);
-    block.dirty = false;
+    block.Modified = false;
     block.nextBlock = NULL;
     block.preBlock = NULL;
     block.offsetNum = -1;
@@ -273,7 +273,7 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
 
 void BufferManager::writtenBackToDisk(const char* fileName,blockNode* block)
 {
-    if(!block->dirty) // 当前block已经被修改, 所以不需要存回文件
+    if(!block->Modified) // 当前block已经被修改, 所以不需要存回文件
     {
         return;
     }
@@ -307,7 +307,7 @@ void BufferManager::writtenBackToDisk(const char* fileName,blockNode* block)
 
 //将列表中的所有blockNode存到磁盘
 
-void BufferManager::writtenBackToDiskAll()
+void BufferManager::WriteAlltoDisk()
 {
     blockNode *btmp = NULL;
     fileNode *ftmp = NULL;
@@ -353,7 +353,7 @@ blockNode* BufferManager::getNextBlock(fileNode* file,blockNode* block)
 
 //获取文件的头block
 
-blockNode* BufferManager::getBlockHead(fileNode* file)
+blockNode* BufferManager::GetBlockHeader(fileNode* file)
 {
     blockNode* btmp = NULL;
     if(file->blockHead != NULL)
@@ -380,10 +380,10 @@ blockNode* BufferManager::getBlockHead(fileNode* file)
 blockNode* BufferManager::getBlockByOffset(fileNode* file, int offsetNumber)
 {
     blockNode* btmp = NULL;
-    if(offsetNumber == 0) return getBlockHead(file);
+    if(offsetNumber == 0) return GetBlockHeader(file);
     else
     {
-        btmp = getBlockHead(file);
+        btmp = GetBlockHeader(file);
         while( offsetNumber > 0)
         {
             btmp = getNextBlock(file, btmp);
@@ -398,7 +398,7 @@ blockNode* BufferManager::getBlockByOffset(fileNode* file, int offsetNumber)
 void BufferManager::delete_fileNode(const char * fileName)
 {
     fileNode* ftmp = getFile(fileName);
-    blockNode* btmp = getBlockHead(ftmp);
+    blockNode* btmp = GetBlockHeader(ftmp);
     queue<blockNode*> blockQ;
     while (true) {
         if(btmp == NULL) return;
@@ -432,17 +432,17 @@ void BufferManager::set_pin(fileNode &file,bool pin)
     file.pin = pin;
 }
 
-//将block设置为dirty（已经被修改过的）
+//将block设置为Modified（已经被修改过的）
 //blockNode&  the block your want to be added modify
 
-void BufferManager::set_dirty(blockNode &block)
+void BufferManager::SetModified(blockNode &block)
 {
-    block.dirty = true;
+    block.Modified = true;
 }
 
-void BufferManager::clean_dirty(blockNode &block)
+void BufferManager::clean_Modified(blockNode &block)
 {
-    block.dirty = false;
+    block.Modified = false;
 }
 
 
@@ -451,7 +451,7 @@ size_t BufferManager::getUsingSize(blockNode* block)
     return *(size_t*)block->address;
 }
 
-void BufferManager::set_usingSize(blockNode & block,size_t usage)
+void BufferManager::SetUsedSize(blockNode & block,size_t usage)
 {
     block.using_size = usage;
     memcpy(block.address,(char*)&usage,sizeof(size_t));

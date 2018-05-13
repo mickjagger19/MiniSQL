@@ -39,10 +39,12 @@ int CatalogManager::dropTable(string tableName)
     }
     return 1;
 }
+
+
 int CatalogManager::getIndexType(string indexName)
 {
     fileNode *ftmp = bm.getFile("Indexs");
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     if (btmp )
     {
         char* addressBegin;
@@ -65,7 +67,7 @@ int CatalogManager::getIndexType(string indexName)
 int CatalogManager::getAllIndex(vector<IndexInfo> * indexs)
 {
     fileNode *ftmp = bm.getFile("Indexs");
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     if (btmp )
     {
         char* addressBegin;
@@ -83,7 +85,7 @@ int CatalogManager::getAllIndex(vector<IndexInfo> * indexs)
 int CatalogManager::addIndex(string indexName,string tableName,string Attribute,int type)
 {
     fileNode *ftmp = bm.getFile("Indexs");
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     IndexInfo i(indexName,tableName,Attribute,type);
     while (true)
     {
@@ -97,8 +99,8 @@ int CatalogManager::addIndex(string indexName,string tableName,string Attribute,
             char* addressBegin;
             addressBegin = bm.get_content(*btmp) + bm.get_usingSize(*btmp);
             memcpy(addressBegin, &i, sizeof(IndexInfo));
-            bm.set_usingSize(*btmp, bm.get_usingSize(*btmp) + sizeof(IndexInfo));
-            bm.set_dirty(*btmp);
+            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + sizeof(IndexInfo));
+            bm.SetModified(*btmp);
 
 
             return this->setIndexOnAttribute(tableName,Attribute,indexName);
@@ -129,7 +131,7 @@ int CatalogManager::findTable(string tableName)
 int CatalogManager::findIndex(string fileName)
 {
     fileNode *ftmp = bm.getFile("Indexs");
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     if (btmp )
     {
         char* addressBegin;
@@ -153,7 +155,7 @@ int CatalogManager::findIndex(string fileName)
 int CatalogManager::dropIndex(string index)
 {
     fileNode *ftmp = bm.getFile("Indexs");
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     if (btmp)
     {
         char* addressBegin;
@@ -174,8 +176,8 @@ int CatalogManager::dropIndex(string index)
             (*i) = *(i + sizeof(IndexInfo));
             i ++;
         }
-        bm.set_usingSize(*btmp, bm.get_usingSize(*btmp) - sizeof(IndexInfo));
-        bm.set_dirty(*btmp);
+        bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) - sizeof(IndexInfo));
+        bm.SetModified(*btmp);
 
         return 1;
     }
@@ -185,7 +187,7 @@ int CatalogManager::dropIndex(string index)
 int CatalogManager::revokeIndexOnAttribute(string tableName,string AttributeName,string indexName)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp)
     {
@@ -203,7 +205,7 @@ int CatalogManager::revokeIndexOnAttribute(string tableName,string AttributeName
                 if(a->index == indexName)
                 {
                     a->index = "";
-                    bm.set_dirty(*btmp);
+                    bm.SetModified(*btmp);
                 }
                 else
                 {
@@ -224,7 +226,7 @@ int CatalogManager::revokeIndexOnAttribute(string tableName,string AttributeName
 int CatalogManager::indexNameListGet(string tableName, vector<string>* indexNameVector)
 {
     fileNode *ftmp = bm.getFile("Indexs");
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     if (btmp )
     {
         char* addressBegin;
@@ -247,7 +249,7 @@ int CatalogManager::indexNameListGet(string tableName, vector<string>* indexName
 int CatalogManager::deleteValue(string tableName, int deleteNum)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp)
     {
@@ -262,7 +264,7 @@ int CatalogManager::deleteValue(string tableName, int deleteNum)
         else
             (*recordNum) -= deleteNum;
 
-        bm.set_dirty(*btmp);
+        bm.SetModified(*btmp);
         return *recordNum;
     }
     return 0;
@@ -272,7 +274,7 @@ int CatalogManager::deleteValue(string tableName, int deleteNum)
 int CatalogManager::insertRecord(string tableName, int recordNum)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
 
 
@@ -284,7 +286,7 @@ int CatalogManager::insertRecord(string tableName, int recordNum)
 
         int * originalRecordNum = (int*)addressBegin;
         *originalRecordNum += recordNum;
-        bm.set_dirty(*btmp);
+        bm.SetModified(*btmp);
         return *originalRecordNum;
     }
     return 0;
@@ -293,7 +295,7 @@ int CatalogManager::insertRecord(string tableName, int recordNum)
 int CatalogManager::getRecordNum(string tableName)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp)
     {
@@ -314,7 +316,7 @@ int CatalogManager::addTable(string tableName, vector<Attribute>* attributeVecto
     }
     fclose(fp);
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp )
     {
@@ -332,8 +334,8 @@ int CatalogManager::addTable(string tableName, vector<Attribute>* attributeVecto
             memcpy(addressBegin, &((*attributeVector)[i]), sizeof(Attribute));
             addressBegin += sizeof(Attribute);
         }
-        bm.set_usingSize(*btmp, bm.get_usingSize(*btmp) + (*attributeVector).size()*sizeof(Attribute)+2+sizeof(int));
-        bm.set_dirty(*btmp);
+        bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + (*attributeVector).size()*sizeof(Attribute)+2+sizeof(int));
+        bm.SetModified(*btmp);
         return 1;
     }
     return 0;
@@ -341,7 +343,7 @@ int CatalogManager::addTable(string tableName, vector<Attribute>* attributeVecto
 int CatalogManager::setIndexOnAttribute(string tableName,string AttributeName,string indexName)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp)
     {
@@ -357,7 +359,7 @@ int CatalogManager::setIndexOnAttribute(string tableName,string AttributeName,st
             if(a->name == AttributeName)
             {
                 a->index = indexName;
-                bm.set_dirty(*btmp);
+                bm.SetModified(*btmp);
                 break;
             }
             a ++;
@@ -374,7 +376,7 @@ int CatalogManager::setIndexOnAttribute(string tableName,string AttributeName,st
 int CatalogManager::attributeGet(string tableName, vector<Attribute>* attributeVector)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp)
     {
@@ -400,7 +402,7 @@ int CatalogManager::attributeGet(string tableName, vector<Attribute>* attributeV
 int CatalogManager::calcuteLenth(string tableName)
 {
     fileNode *ftmp = bm.getFile(tableName.c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     if (btmp)
     {
@@ -450,7 +452,8 @@ int CatalogManager::calcuteLenth2(int type){
     }
 }
 
-// Get the record string of a table by the table name and recordContent, write the result to the recordResult reference.
+//通过RecordContent和表名获取某张表的记录
+
 void CatalogManager::recordStringGet(string tableName, vector<string>* recordContent, char* recordResult)
 {
     vector<Attribute> attributeVector;

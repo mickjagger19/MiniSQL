@@ -23,9 +23,9 @@ private:
     void init_block(blockNode & block);
     void init_file(fileNode & file);
     blockNode* getBlock(fileNode * file,blockNode* position,bool if_pin = false);
-    void writtenBackToDiskAll();
+    void WriteAlltoDisk();
     void writtenBackToDisk(const char* fileName,blockNode* block);
-    void clean_dirty(blockNode &block);
+    void clean_Modified(blockNode &block);
     size_t getUsingSize(blockNode* block);
     static const int BLOCK_SIZE = 4096;
 
@@ -34,10 +34,10 @@ public:
     ~BufferManager();
     void delete_fileNode(const char * fileName);
     fileNode* getFile(const char* fileName,bool if_pin = false);
-    void set_dirty(blockNode & block);
+    void SetModified(blockNode & block);
     void set_pin(blockNode & block,bool pin);
     void set_pin(fileNode & file,bool pin);
-    void set_usingSize(blockNode & block,size_t usage);
+    void SetUsedSize(blockNode & block,size_t usage);
     size_t get_usingSize(blockNode & block);
     char* get_content(blockNode& block);
     static int getBlockSize() //Get the size of the block that others can use.Others cannot use the block head
@@ -47,7 +47,7 @@ public:
 
 
     blockNode* getNextBlock(fileNode * file,blockNode* block);
-    blockNode* getBlockHead(fileNode* file);
+    blockNode* GetBlockHeader(fileNode* file);
     blockNode* getBlockByOffset(fileNode* file, int offestNumber);
 
 };

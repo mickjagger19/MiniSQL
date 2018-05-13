@@ -76,7 +76,7 @@ int RecordManager::indexDrop(string indexName)
 int RecordManager::recordInsert(string tableName,char* record, int recordSize)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     while (true)
     {
         if (btmp == NULL)
@@ -89,8 +89,8 @@ int RecordManager::recordInsert(string tableName,char* record, int recordSize)
             char* addressBegin;
             addressBegin = bm.get_content(*btmp) + bm.get_usingSize(*btmp);
             memcpy(addressBegin, record, recordSize);
-            bm.set_usingSize(*btmp, bm.get_usingSize(*btmp) + recordSize);
-            bm.set_dirty(*btmp);
+            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + recordSize);
+            bm.SetModified(*btmp);
             return btmp->offsetNum;
         }
         else
@@ -110,7 +110,7 @@ int RecordManager::recordInsert(string tableName,char* record, int recordSize)
 int RecordManager::recordAllShow(string tableName, vector<string>* attributeNameVector,  vector<Condition>* conditionVector)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     int count = 0;
     while (true)
     {
@@ -202,7 +202,7 @@ int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNa
 int RecordManager::recordAllFind(string tableName, vector<Condition>* conditionVector)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     int count = 0;
     while (true)
     {
@@ -270,7 +270,7 @@ int RecordManager::recordBlockFind(string tableName, vector<Condition>* conditio
 int RecordManager::recordAllDelete(string tableName, vector<Condition>* conditionVector)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
 
     int count = 0;
     while (true)
@@ -347,8 +347,8 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
                 recordBegin[i] = recordBegin[i + recordSize];
             }
             memset(recordBegin + i, 0, recordSize);
-            bm.set_usingSize(*block, bm.get_usingSize(*block) - recordSize);
-            bm.set_dirty(*block);
+            bm.SetUsedSize(*block, bm.get_usingSize(*block) - recordSize);
+            bm.SetModified(*block);
         }
         else
         {
@@ -366,7 +366,7 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
 int RecordManager::indexRecordAllAlreadyInsert(string tableName,string indexName)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
-    blockNode *btmp = bm.getBlockHead(ftmp);
+    blockNode *btmp = bm.GetBlockHeader(ftmp);
     int count = 0;
     while (true)
     {
