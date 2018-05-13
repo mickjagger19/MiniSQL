@@ -152,12 +152,10 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
     }
 }
 
-/**
- *
- * create a table
- * @param tableName: name of table
- * @param attributeVector: vector of attribute
- * @param primaryKeyName: primary key of a table (default: "")
+/*建立表
+ * @param tableName: 表名
+ * @param attributeVector: 属性向量
+ * @param primaryKeyName: 主键
  * @param primaryKeyLocation: the primary position in the table
  */
 void API::tableCreate(string tableName, vector<Attribute>* attributeVector, string primaryKeyName,int primaryKeyLocation)
@@ -292,6 +290,16 @@ void API::SelectShow(string tableName, vector<string>* attributeNameVector, vect
             //find the block by index,search in the block
             num = rm->recordBlockShow(tableName, attributeNameVector, conditionVector, blockOffset);
         }
+
+        int i=0;
+        for ( i = 0; i < (*attributeNameVector).size(); i++){
+            cout<<"+";
+
+            for (int j = 0 ; j<= (*attributeNameVector)[i].length()*4 ; j++){
+                cout<<"-";
+            }
+        }
+        cout<<"\n";
 
         printf("%d rows in set ", num);
     }
@@ -473,12 +481,10 @@ int API::typeSizeGet(int type)
     return cm->calcuteLenth2(type);
 }
 
-/**
- *
- * get the vector of a all name of index in the table
- * @param tableName:  name of table
- * @param indexNameVector:  a point to vector of indexName(which would change)
- */
+//返回表中所有index名字的向量
+//tableName:  name of table
+//indexNameVector:  a point to vector of indexName(which would change)
+
 int API::indexNameListGet(string tableName, vector<string>* indexNameVector)
 {
     if (!tableExist(tableName)) {
@@ -487,11 +493,9 @@ int API::indexNameListGet(string tableName, vector<string>* indexNameVector)
     return cm->indexNameListGet(tableName, indexNameVector);
 }
 
-/**
- *
- * get the vector of all name of index's file
- * @param indexNameVector: will set all index's
- */
+//返回所有index文件名的向量
+//indexNameVector: will set all index's
+
 void API::allIndexAddressInfoGet(vector<IndexInfo> *indexNameVector)
 {
     cm->getAllIndex(indexNameVector);
@@ -501,12 +505,10 @@ void API::allIndexAddressInfoGet(vector<IndexInfo> *indexNameVector)
     }
 }
 
-/**
- *
- * get the vector of a attribute‘s type in a table
- * @param tableName:  name of table
- * @param attributeNameVector:  a point to vector of attributeType(which would change)
- */
+//返回属性类型的向量
+//tableName:  name of table
+//attributeNameVector:  a point to vector of attributeType(which would change)
+
 int API::attributeGet(string tableName, vector<Attribute>* attributeVector)
 {
     if (!tableExist(tableName)) {
@@ -515,14 +517,12 @@ int API::attributeGet(string tableName, vector<Attribute>* attributeVector)
     return cm->attributeGet(tableName, attributeVector);
 }
 
-/**
- *
- * insert all index value of a record to index tree
- * @param recordBegin: point to record begin
- * @param recordSize: size of the record
- * @param attributeVector:  a point to vector of attributeType(which would change)
- * @param blockOffset: the block offset num
- */
+//向树中添加所有记录的值
+//recordBegin: point to record begin
+//recordSize: size of the record
+//attributeVector:  a point to vector of attributeType(which would change)
+//blockOffset: the block offset num
+
 void API::recordIndexInsert(char* recordBegin,int recordSize, vector<Attribute>* attributeVector,  int blockOffset)
 {
     char* contentBegin = recordBegin;
@@ -539,14 +539,12 @@ void API::recordIndexInsert(char* recordBegin,int recordSize, vector<Attribute>*
     }
 }
 
-/**
- *
- * insert a value to index tree
- * @param indexName: name of index
- * @param contentBegin: address of content
- * @param type: the type of content
- * @param blockOffset: the block offset num
- */
+//向树中添加值
+//indexName: name of index
+//contentBegin: address of content
+//type: the type of content
+//blockOffset: the block offset num
+
 void API::indexInsert(string indexName, char* contentBegin, int type, int blockOffset)
 {
     string content= "";
@@ -575,14 +573,12 @@ void API::indexInsert(string indexName, char* contentBegin, int type, int blockO
     im->insertIndex(rm->indexFileNameGet(indexName), content, blockOffset, type);
 }
 
-/**
- *
- * delete all index value of a record to index tree
- * @param recordBegin: point to record begin
- * @param recordSize: size of the record
- * @param attributeVector:  a point to vector of attributeType(which would change)
- * @param blockOffset: the block offset num
- */
+//删除所有记录在树中的值
+// recordBegin: point to record begin
+// recordSize: size of the record
+// attributeVector:  a point to vector of attributeType(which would change)
+// blockOffset: the block offset num
+
 void API::recordIndexDelete(char* recordBegin,int recordSize, vector<Attribute>* attributeVector, int blockOffset)
 {
     char* contentBegin = recordBegin;
@@ -626,15 +622,14 @@ void API::recordIndexDelete(char* recordBegin,int recordSize, vector<Attribute>*
 
 }
 
-/**
- * get if the table
- * @param tableName the name of the table
- */
+//返回是否存在表
+//tableName the name of the table
+
 int API::tableExist(string tableName)
 {
     if (cm->findTable(tableName) != TABLE_FILE)
     {
-        cout << "There is no table " << tableName << endl;
+        cout << "ERROR 1146 (42S02): Table '"<<tableName+"' doesn't exist"<< endl;
         return 0;
     }
     else
@@ -643,19 +638,16 @@ int API::tableExist(string tableName)
     }
 }
 
-/**
- * get the primary index Name by table
- * @param tableName : name of the table
- */
+//返回表的序号
+//tableName : name of the table
+
 string API::primaryIndexNameGet(string tableName)
 {
     return  "PRIMARY_" + tableName;
 }
 
-/**
- * printe attribute name
- * @param attributeNameVector: the vector of attribute's name
- */
+//打印select结果的表头
+//attributeNameVector: the vector of attribute's name
 
 void API::tableAttributePrint(vector<string>* attributeNameVector)
 {
@@ -665,7 +657,7 @@ void API::tableAttributePrint(vector<string>* attributeNameVector)
     for ( i = 0; i < AttributeSize; i++){
         cout<<"+";
 
-        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*3 ; j++){
+        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*4 ; j++){
             cout<<"-";
         }
     }
@@ -677,7 +669,7 @@ void API::tableAttributePrint(vector<string>* attributeNameVector)
     {
         cout<<"| ";
         printf("%s ", (*attributeNameVector)[i].c_str());
-        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*2-2 ; j++){
+        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*3-2 ; j++){
             cout<<" ";
         }
 
@@ -688,11 +680,11 @@ void API::tableAttributePrint(vector<string>* attributeNameVector)
     for ( i = 0; i < AttributeSize; i++){
         cout<<"+";
 
-        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*3 ; j++){
+        for (int j = 0 ; j<= (*attributeNameVector)[i].length()*4 ; j++){
             cout<<"-";
         }
     }
-    cout<<"+\n";
+    cout<<"+";
 
     if (i != 0)
         printf("\n");

@@ -110,6 +110,7 @@ int RecordManager::recordInsert(string tableName,char* record, int recordSize)
  * @param conditionVector: the conditions list
  * @return int: the number of the record meet requirements(-1 represent error)
  */
+
 int RecordManager::recordAllShow(string tableName, vector<string>* attributeNameVector,  vector<Condition>* conditionVector)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -147,6 +148,7 @@ int RecordManager::recordAllShow(string tableName, vector<string>* attributeName
  * @param blockOffset: the block's offsetNum
  * @return int: the number of the record meet requirements in the block(-1 represent error)
  */
+
 int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNameVector, vector<Condition>* conditionVector, int blockOffset)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -202,6 +204,8 @@ int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNa
 
         recordBegin += recordSize;
     }
+
+
 
     return count;
 }
@@ -555,11 +559,25 @@ void RecordManager::recordPrint(char* recordBegin, int recordSize, vector<Attrib
             if ((*attributeNameVector)[j] == (*attributeVector)[i].name) {
                 contentPrint(content, type);
                 int length=0;
-                while (content[length++]!='\0') {};
-                length--;
-//                cout << "length" << length ;
+
+
+                if (type==0) {
+                    int tmp = *((int *) content);
+                    if (tmp>1000) length=4;
+                    else if (tmp>100) length=3;
+                    else if (tmp>10) length=2;
+                    else if (tmp>1) length=1;
+                }
+                else {
+                    while (content[length++] != '\0') {};
+                    length--;
+                }
+//                cout << " contentbegin " << *contentBegin;
+//                cout << " content " << *content;
+//                cout << " recordbegin " << *recordBegin ;
+
                 int k;
-                length=(*attributeVector)[i].name.length()*3-2-length;
+                length=(*attributeVector)[i].name.length()*4-2-length;
                 for (k = 0 ; k <= length ; k++) {
                     cout << " ";
                 }
@@ -574,7 +592,7 @@ void RecordManager::recordPrint(char* recordBegin, int recordSize, vector<Attrib
         contentBegin += typeSize;
 
     }
-    cout<<"|\n";
+    cout<<"|";
 
 
 }

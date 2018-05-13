@@ -274,10 +274,14 @@ int CatalogManager::insertRecord(string tableName, int recordNum)
     fileNode *ftmp = bm.getFile(tableName.c_str());
     blockNode *btmp = bm.getBlockHead(ftmp);
 
+
+
+
     if (btmp)
     {
 
         char* addressBegin = bm.get_content(*btmp) ;
+
         int * originalRecordNum = (int*)addressBegin;
         *originalRecordNum += recordNum;
         bm.set_dirty(*btmp);
@@ -453,10 +457,15 @@ void CatalogManager::recordStringGet(string tableName, vector<string>* recordCon
     attributeGet(tableName, &attributeVector);
     char * contentBegin = recordResult;
 
+
+
+
+
     for(int i = 0; i < attributeVector.size(); i++)
     {
         Attribute attribute = attributeVector[i];
         string content = (*recordContent)[i];
+
         int type = attribute.type;
         int typeSize = calcuteLenth2(type);
         stringstream ss;

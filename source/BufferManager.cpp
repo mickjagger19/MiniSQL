@@ -118,6 +118,10 @@ fileNode* BufferManager::getFile(const char * fileName, bool if_pin)
 {
     blockNode * btmp = NULL;
     fileNode * ftmp = NULL;
+
+
+//    cout << " fileName "<<fileName;
+
     if(fileHead != NULL)
     {
         for(ftmp = fileHead;ftmp != NULL;ftmp = ftmp->nextFile)
@@ -129,6 +133,7 @@ fileNode* BufferManager::getFile(const char * fileName, bool if_pin)
             }
         }
     }
+
     // The fileNode is not in the list
     if(total_file == 0) // No file in the list now
     {
@@ -529,6 +534,7 @@ void BufferManager::set_usingSize(blockNode & block,size_t usage)
 size_t BufferManager::get_usingSize(blockNode & block)
 {
     return block.using_size;
+
 }
 
 /**
@@ -543,6 +549,7 @@ size_t BufferManager::get_usingSize(blockNode & block)
 char* BufferManager::get_content(blockNode& block)
 {
     return block.address + sizeof(size_t);
+
 }
 
 
