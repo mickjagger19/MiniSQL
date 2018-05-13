@@ -548,7 +548,8 @@ bool BPlusTree<KeyType>::InsertKey(KeyType &key,offsetNumber val)
     FindKey(root,key,snp);
     if(snp.ifFound)
     {
-        cout << "Error:in insert key to index: the duplicated key!" << endl;
+//        cout << "Error:in insert key to index: the duplicated key!" << endl;
+        cout << "ERROR: Duplicate entry '"<< key <<"' for key 'PRIMARY'";
         return false;
     }
     else
@@ -981,12 +982,12 @@ template <class KeyType>
 void BPlusTree<KeyType>::LoadFromDisk(blockNode* btmp)
 {
     int valueSize = sizeof(offsetNumber);
-    char* indexBegin = bm.get_content(*btmp);
+    char* indexBegin = bm.GetContent(*btmp);
     char* valueBegin = indexBegin + keySize;
     KeyType key;
     offsetNumber value;
 
-    while(valueBegin - bm.get_content(*btmp) < bm.get_usingSize(*btmp))
+    while(valueBegin - bm.GetContent(*btmp) < bm.GetUsedSize(*btmp))
         //在Block中还有可用的位置
     {
         key = *(KeyType*)indexBegin;
@@ -1014,10 +1015,10 @@ void BPlusTree<KeyType>::WriteAlltoDisk()
         {
             char* key = (char*)&(ntmp->keys[i]);
             char* value = (char*)&(ntmp->vals[i]);
-            memcpy(bm.get_content(*btmp)+bm.get_usingSize(*btmp),key,keySize);
-            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + keySize);
-            memcpy(bm.get_content(*btmp)+bm.get_usingSize(*btmp),value,valueSize);
-            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + valueSize);
+            memcpy(bm.GetContent(*btmp)+bm.GetUsedSize(*btmp),key,keySize);
+            bm.SetUsedSize(*btmp, bm.GetUsedSize(*btmp) + keySize);
+            memcpy(bm.GetContent(*btmp)+bm.GetUsedSize(*btmp),value,valueSize);
+            bm.SetUsedSize(*btmp, bm.GetUsedSize(*btmp) + valueSize);
         }
 
         btmp = bm.getNextBlock(file, btmp);

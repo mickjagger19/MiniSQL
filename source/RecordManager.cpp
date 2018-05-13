@@ -83,13 +83,13 @@ int RecordManager::recordInsert(string tableName,char* record, int recordSize)
         {
             return -1;
         }
-        if (bm.get_usingSize(*btmp) <= bm.getBlockSize() - recordSize)
+        if (bm.GetUsedSize(*btmp) <= bm.getBlockSize() - recordSize)
         {
 
             char* addressBegin;
-            addressBegin = bm.get_content(*btmp) + bm.get_usingSize(*btmp);
+            addressBegin = bm.GetContent(*btmp) + bm.GetUsedSize(*btmp);
             memcpy(addressBegin, record, recordSize);
-            bm.SetUsedSize(*btmp, bm.get_usingSize(*btmp) + recordSize);
+            bm.SetUsedSize(*btmp, bm.GetUsedSize(*btmp) + recordSize);
             bm.SetModified(*btmp);
             return btmp->offsetNum;
         }
@@ -168,13 +168,13 @@ int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNa
 
     int count = 0;
 
-    char* recordBegin = bm.get_content(*block);
+    char* recordBegin = bm.GetContent(*block);
     vector<Attribute> attributeVector;
     int recordSize = api->recordSizeGet(tableName);
 
     api->attributeGet(tableName, &attributeVector);
-    char* blockBegin = bm.get_content(*block);
-    size_t usingSize = bm.get_usingSize(*block);
+    char* blockBegin = bm.GetContent(*block);
+    size_t usingSize = bm.GetUsedSize(*block);
 
     while (recordBegin - blockBegin  < usingSize)
     {
@@ -241,13 +241,13 @@ int RecordManager::recordBlockFind(string tableName, vector<Condition>* conditio
     }
     int count = 0;
 
-    char* recordBegin = bm.get_content(*block);
+    char* recordBegin = bm.GetContent(*block);
     vector<Attribute> attributeVector;
     int recordSize = api->recordSizeGet(tableName);
 
     api->attributeGet(tableName, &attributeVector);
 
-    while (recordBegin - bm.get_content(*block)  < bm.get_usingSize(*block))
+    while (recordBegin - bm.GetContent(*block)  < bm.GetUsedSize(*block))
     {
 
 
@@ -326,13 +326,13 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
     }
     int count = 0;
 
-    char* recordBegin = bm.get_content(*block);
+    char* recordBegin = bm.GetContent(*block);
     vector<Attribute> attributeVector;
     int recordSize = api->recordSizeGet(tableName);
 
     api->attributeGet(tableName, &attributeVector);
 
-    while (recordBegin - bm.get_content(*block) < bm.get_usingSize(*block))
+    while (recordBegin - bm.GetContent(*block) < bm.GetUsedSize(*block))
     {
 
 
@@ -342,12 +342,12 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
 
             api->recordIndexDelete(recordBegin, recordSize, &attributeVector, block->offsetNum);
             int i = 0;
-            for (i = 0; i + recordSize + recordBegin - bm.get_content(*block) < bm.get_usingSize(*block); i++)
+            for (i = 0; i + recordSize + recordBegin - bm.GetContent(*block) < bm.GetUsedSize(*block); i++)
             {
                 recordBegin[i] = recordBegin[i + recordSize];
             }
             memset(recordBegin + i, 0, recordSize);
-            bm.SetUsedSize(*block, bm.get_usingSize(*block) - recordSize);
+            bm.SetUsedSize(*block, bm.GetUsedSize(*block) - recordSize);
             bm.SetModified(*block);
         }
         else
@@ -403,7 +403,7 @@ int RecordManager::indexRecordBlockAlreadyInsert(string tableName,string indexNa
     }
     int count = 0;
 
-    char* recordBegin = bm.get_content(*block);
+    char* recordBegin = bm.GetContent(*block);
     vector<Attribute> attributeVector;
     int recordSize = api->recordSizeGet(tableName);
 
@@ -413,7 +413,7 @@ int RecordManager::indexRecordBlockAlreadyInsert(string tableName,string indexNa
     int typeSize;
     char * contentBegin;
 
-    while (recordBegin - bm.get_content(*block)  < bm.get_usingSize(*block))
+    while (recordBegin - bm.GetContent(*block)  < bm.GetUsedSize(*block))
     {
         contentBegin = recordBegin;
         //if the recordBegin point to a record

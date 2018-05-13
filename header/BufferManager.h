@@ -38,8 +38,8 @@ public:
     void set_pin(blockNode & block,bool pin);
     void set_pin(fileNode & file,bool pin);
     void SetUsedSize(blockNode & block,size_t usage);
-    size_t get_usingSize(blockNode & block);
-    char* get_content(blockNode& block);
+    size_t GetUsedSize(blockNode & block);
+    char* GetContent(blockNode& block);
     static int getBlockSize() //Get the size of the block that others can use.Others cannot use the block head
     {
         return BLOCK_SIZE - sizeof(size_t);

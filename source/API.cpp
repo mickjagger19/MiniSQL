@@ -112,7 +112,8 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
 
     if (i == attributeVector.size())
     {
-        cout << "there is not this attribute in the table" << endl;
+        cout << "ERROR: Unknown column '"+attributeName+"' in 'field list'"<< endl;
+//        cout << "there is not this attribute in the table" << endl;
         return;
     }
 
@@ -135,7 +136,7 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
 
         //recordManager 用于添加记录
         rm->indexRecordAllAlreadyInsert(tableName, indexName);
-        printf("Create index %s successfully\n", indexName.c_str());
+        printf("Create primary key %s successfully\n", indexName.c_str());
     }
     else
     {
@@ -161,7 +162,8 @@ void API::tableCreate(string tableName, vector<Attribute>* attributeVector, stri
 
     if(cm->findTable(tableName) == TABLE_FILE)
     {
-        cout << "There is a table " << tableName << " already" << endl;
+//        cout << "There is a table " << tableName << " already" << endl;
+        cout << "ERROR: Table '" <<tableName<< "' already exists"<<endl;
         return;
     }
 
@@ -169,7 +171,7 @@ void API::tableCreate(string tableName, vector<Attribute>* attributeVector, stri
     if(rm->tableCreate(tableName))
     {
         //CatalogManager to create a table information
-        cm->addTable(tableName, attributeVector, primaryKeyName, primaryKeyLocation);
+        cm->AddTable(tableName, attributeVector, primaryKeyName, primaryKeyLocation);
 
         printf("Query OK, 0 rows affected\n");
     }
@@ -233,7 +235,7 @@ void API::SelectShow(string tableName, vector<string>* attributeNameVector, vect
             if (i == attributeVector.size())
             {
 //                cout << "the attribute which you want to print is not exist in the table" << endl;
-                cout << "ERROR 1054 (42S22):Unknown column '" + name + "' in 'field list' ";
+                cout << "ERROR:Unknown column '" + name + "' in 'field list' ";
                 return;
             }
 
@@ -261,7 +263,8 @@ void API::SelectShow(string tableName, vector<string>* attributeNameVector, vect
 
                 if (i == attributeVector.size())
                 {
-                    cout << "the attribute does not exist in the table" << endl;
+//                    cout << "the attribute does not exist in the table" << endl;
+                    cout << "ERROR: Unknown column '"+condition.attributeName+"' in 'field list'"<<endl;
                     return;
                 }
             }
@@ -286,6 +289,7 @@ void API::SelectShow(string tableName, vector<string>* attributeNameVector, vect
                 cout<<"-";
             }
         }
+        cout<<"+";
         cout<<"\n";
 
         printf("%d rows in set ", num);
@@ -323,7 +327,9 @@ void API::recordInsert(string tableName, vector<string>* recordContent)
             if (blockoffest != -1)
             {
                 //if the value has exist in index tree then fail to insert the record
-                cout << "insert fail because index value exist" << endl;
+//                cout << "insert fail because index value exist" << endl;
+                cout << "ERROR: Duplicate entry '"+ (*recordContent)[i]+"' for key 'PRIMARY'";
+
                 return;
             }
         }
@@ -344,6 +350,7 @@ void API::recordInsert(string tableName, vector<string>* recordContent)
             int recordConflictNum =  rm->recordAllFind(tableName, &conditionTmp);
             if (recordConflictNum > 0) {
                 cout << "insert fail because unique value exist" << endl;
+//                cout << "ERROR: Duplicate entry '"<<<<"' for key 'b'"<<endl;
                 return;
             }
 
@@ -357,7 +364,7 @@ void API::recordInsert(string tableName, vector<string>* recordContent)
     cm->recordStringGet(tableName, recordContent, recordString);
 
     //RecordManager to insert the record into file; and get the position of block being insert
-    int recordSize = cm->calcuteLenth(tableName);
+    int recordSize = cm->CalculateLengthofSingleRecord(tableName);
     int blockOffset = rm->recordInsert(tableName, recordString, recordSize);
 
     if(blockOffset >= 0)
@@ -399,9 +406,13 @@ void API::recordDelete(string tableName, vector<Condition>* conditionVector)
     {
         for (Condition condition : *conditionVector)
         {
+
+
             if (condition.operate == Condition::OPERATOR_EQUAL)
+            //如果是等号
             {
                 for (Attribute attribute : attributeVector)
+                //找到对应的属性名(attribute.name)和值(condition.value)并进行比对
                 {
                     if (attribute.index != "" && attribute.name == condition.attributeName)
                     {
@@ -415,16 +426,16 @@ void API::recordDelete(string tableName, vector<Condition>* conditionVector)
 
     if (blockOffset == -1)
     {
-        //if we con't find the block by index,we need to find all block
+        //如果不能通过index找到block，那就查找所有block
         num = rm->recordAllDelete(tableName, conditionVector);
     }
     else
     {
-        //find the block by index,search in the block
+        //按照index在block中找表中复合条件的记录
         num = rm->recordBlockDelete(tableName, conditionVector, blockOffset);
     }
 
-    //delete the number of record in in the table
+    //在表中删除指定数量的记录
     cm->deleteValue(tableName, num);
     printf("Query OK,  %d row in table %s affected ", num, tableName.c_str());
 }
@@ -446,7 +457,7 @@ int API::recordSizeGet(string tableName)
 {
     if (!tableExist(tableName)) return 0;
 
-    return cm->calcuteLenth(tableName);
+    return cm->CalculateLengthofSingleRecord(tableName);
 }
 
 //返回类型的存储空间大小
@@ -455,7 +466,7 @@ int API::recordSizeGet(string tableName)
 
 int API::typeSizeGet(int type)
 {
-    return cm->calcuteLenth2(type);
+    return cm->CalculateLenghofType(type);
 }
 
 //返回表中所有index名字的向量
@@ -606,7 +617,7 @@ int API::tableExist(string tableName)
 {
     if (cm->findTable(tableName) != TABLE_FILE)
     {
-        cout << "ERROR 1146 (42S02): Table '"<<tableName+"' doesn't exist"<< endl;
+        cout << "ERROR: Table '"<<tableName+"' doesn't exist"<< endl;
         return 0;
     }
     else
@@ -631,6 +642,8 @@ void API::tableAttributePrint(vector<string>* attributeNameVector)
     int i;
     int AttributeSize=(*attributeNameVector).size();
 
+
+    if (!AttributeSize) return;
     for ( i = 0; i < AttributeSize; i++){
         cout<<"+";
 
@@ -661,6 +674,7 @@ void API::tableAttributePrint(vector<string>* attributeNameVector)
             cout<<"-";
         }
     }
+
     cout<<"+";
 
     if (i != 0)

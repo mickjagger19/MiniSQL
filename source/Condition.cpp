@@ -39,6 +39,7 @@ bool Condition::ifRight(int content)
 }
 
 bool Condition::ifRight(float content)
+
 {
     stringstream ss;
     ss << value;

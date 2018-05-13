@@ -457,7 +457,7 @@ void BufferManager::SetUsedSize(blockNode & block,size_t usage)
     memcpy(block.address,(char*)&usage,sizeof(size_t));
 }
 
-size_t BufferManager::get_usingSize(blockNode & block)
+size_t BufferManager::GetUsedSize(blockNode & block)
 {
     return block.using_size;
 
@@ -465,7 +465,7 @@ size_t BufferManager::get_usingSize(blockNode & block)
 
 //获取block的内容（除了block头）
 
-char* BufferManager::get_content(blockNode& block)
+char* BufferManager::GetContent(blockNode& block)
 {
     return block.address + sizeof(size_t);
 

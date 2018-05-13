@@ -10,10 +10,6 @@
 
 
 
-
-
-
-
 using namespace std;
 
 
@@ -136,25 +132,29 @@ void IndexManager::dropIndex(string filePath,int type)
 
 }
 
-//在B+树中根据键值搜索
+//在B+树中根据key搜索满足条件的记录
 
 offsetNumber IndexManager::searchIndex(string filePath,string key,int type)
 {
-    setKey(type, key);
+    SetKey(type, key);
 
+    //如果是整型
     if(type == TYPE_INT)
     {
+        //新建迭代器
         intMap::iterator itInt = indexIntMap.find(filePath);
         if(itInt == indexIntMap.end())
+        //如果没找到
         {
             cout << "Error:in search index, no index " << filePath <<" exits" << endl;
             return -1;
         }
         else
         {
-            return itInt->second->search(kt.intTmp);
+            return itInt->second->search(KeySet.intTmp);
         }
     }
+    //如果是浮点型
     else if(type == TYPE_FLOAT)
     {
         floatMap::iterator itFloat = indexFloatMap.find(filePath);
@@ -165,10 +165,11 @@ offsetNumber IndexManager::searchIndex(string filePath,string key,int type)
         }
         else
         {
-            return itFloat->second->search(kt.floatTmp);
+            return itFloat->second->search(KeySet.floatTmp);
 
         }
     }
+    //如果是字符串
     else
     {
         stringMap::iterator itString = indexStringMap.find(filePath);
@@ -184,11 +185,11 @@ offsetNumber IndexManager::searchIndex(string filePath,string key,int type)
     }
 }
 
-//向B+树插入值
+//向B+树插入值，同上
 
 void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffset,int type)
 {
-    setKey(type, key);
+    SetKey(type, key);
 
     if(type == TYPE_INT)
     {
@@ -200,7 +201,7 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
         }
         else
         {
-            itInt->second->InsertKey(kt.intTmp,blockOffset);
+            itInt->second->InsertKey(KeySet.intTmp,blockOffset);
         }
     }
     else if(type == TYPE_FLOAT)
@@ -213,7 +214,7 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
         }
         else
         {
-            itFloat->second->InsertKey(kt.floatTmp,blockOffset);
+            itFloat->second->InsertKey(KeySet.floatTmp,blockOffset);
 
         }
     }
@@ -232,11 +233,11 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
     }
 }
 
-//删除值
+//删除值，大致同上
 
 void IndexManager::deleteIndexByKey(string filePath,string key,int type)
 {
-    setKey(type, key);
+    SetKey(type, key);
 
     if(type == TYPE_INT)
     {
@@ -248,7 +249,7 @@ void IndexManager::deleteIndexByKey(string filePath,string key,int type)
         }
         else
         {
-            itInt->second->deleteKey(kt.intTmp);
+            itInt->second->deleteKey(KeySet.intTmp);
         }
     }
     else if(type == TYPE_FLOAT)
@@ -261,7 +262,7 @@ void IndexManager::deleteIndexByKey(string filePath,string key,int type)
         }
         else
         {
-            itFloat->second->deleteKey(kt.floatTmp);
+            itFloat->second->deleteKey(KeySet.floatTmp);
 
         }
     }
@@ -308,16 +309,16 @@ int IndexManager::getKeySize(int type)
 
 //根据输入字符串和类型获取值
 
-void IndexManager::setKey(int type,string key)
+void IndexManager::SetKey(int type,string key)
 {
     stringstream ss;
     ss << key;
     if(type == this->TYPE_INT)
-        ss >> this->kt.intTmp;
+        ss >> this->KeySet.intTmp;
     else if(type == this->TYPE_FLOAT)
-        ss >> this->kt.floatTmp;
+        ss >> this->KeySet.floatTmp;
     else if(type > 0)
-        ss >> this->kt.stringTmp;
+        ss >> this->KeySet.stringTmp;
     else
         cout << "Error: in getKey: invalid type" << endl;
 

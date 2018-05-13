@@ -29,7 +29,7 @@ int Interpreter::interpreter(string s)
         {
             string primaryKey = "";
             string tableName = "";
-            //tablename
+            //表名tablename
             word = FetchWord(s,&tmp);
             if (!word.empty())			//create table tablename
                 tableName = word;
@@ -100,7 +100,7 @@ int Interpreter::interpreter(string s)
                     if(strcmp(word.c_str(), ",") != 0)
                     {
                         if(strcmp(word.c_str(), ")") != 0){
-                            cout<<"Syntax Error for ,!"<<endl;
+                            cout<<"Syntax Error for "<<word<<endl;
                             return 0;
                         }
                         else
@@ -299,7 +299,7 @@ int Interpreter::interpreter(string s)
                     Condition c(attributeName,value,operate);
                     conditionVector.push_back(c);
                     word =FetchWord(s,&tmp);
-                    if(word.empty()) // no condition
+                    if(word.empty()) //没有条件
                         break;
                     if (strcmp(word.c_str(),"and") != 0)
                         throw SyntaxException();
@@ -494,7 +494,7 @@ int Interpreter::interpreter(string s)
         if(word != "")
 //            ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 's fsd' at line 1
 //            cout<<"Error, command "<<word<<" not found"<<endl;
-            cout<<"ERROR 1064 (42000): You have an error in your MiniSQL syntax; check the readme.md for the right syntax to use near '"+ word+ "' at line 1"<<endl;
+            cout<<"ERROR: You have an error in your MiniSQL syntax; check the readme.md for the right syntax to use near '"+ word + "' at line 1"<<endl;
         return 0;
     }
     return 0;

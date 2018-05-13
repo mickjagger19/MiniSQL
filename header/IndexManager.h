@@ -24,7 +24,7 @@ private:
 
     int static const TYPE_FLOAT = Attribute::TYPE_FLOAT;
     int static const TYPE_INT = Attribute::TYPE_INT;
-    // other values mean the size of the char.Eg, 4 means char(4);
+    //其他值的意思是char的尺寸
 
     API *api; // to call the functions of API
 
@@ -35,14 +35,15 @@ private:
         int intTmp;
         float floatTmp;
         string stringTmp;
-    }; // the struct to help to convert the inputed string to specfied type
-    struct keyTmp kt;
+    };
+    // KeyTmp用于把字符串转换成相应的值
+    struct keyTmp KeySet;
 
     int getDegree(int type);
 
     int getKeySize(int type);
 
-    void setKey(int type,string key);
+    void SetKey(int type,string key);
 
 
 public:
@@ -62,4 +63,4 @@ public:
 };
 
 
-#endif /* defined(__Minisql__IndexManager__) */
+#endif
