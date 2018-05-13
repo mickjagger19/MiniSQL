@@ -68,29 +68,29 @@ class BPlusTree
 private:
     typedef TreeNode<KeyType>* Node;
 
-    // a struct helping to find the node containing a specific key
+
     struct searchNodeParse
     {
-        Node pNode; // a pointer pointering to the node containing the key
-        size_t index; // the position of the key
-        bool ifFound; // the flag that whether the key is found.
+        Node pNode;
+        size_t index; // 值的位置
+        bool ifFound;
     };
 private:
     string fileName;
     Node root;
-    Node leafHead; // the head of the leaf node
+    Node leafHead; // 叶子节点的头
     size_t keyCount;
     size_t level;
     size_t nodeCount;
-    fileNode* file; // the filenode of this tree
-    int keySize; // the size of key
+    fileNode* file;
+    int keySize;
     int degree;
 
 public:
     BPlusTree(string m_name,int keySize,int degree);
     ~BPlusTree();
 
-    offsetNumber search(KeyType& key); // search the value of specific key
+    offsetNumber search(KeyType& key);
     bool insertKey(KeyType &key,offsetNumber val);
     bool deleteKey(KeyType &key);
 
@@ -101,7 +101,7 @@ public:
     void readFromDisk(blockNode* btmp);
 
 private:
-    void init_tree();// init the tree
+    void init_tree();
     bool adjustAfterinsert(Node pNode);
     bool adjustAfterDelete(Node pNode);
     void findToLeaf(Node pNode,KeyType key,searchNodeParse &snp);
@@ -119,16 +119,9 @@ private:
 
 
 
-/* the implement of BPlusTree function */
-//******** The definition of the functions of the class TreeNode **********
+//B+树实现
+//构造器
 
-/**
- * Constructor: create the tree node.
- *
- * @param int the degreee
- * @param bool the flag that whether the node is a tree node or not
- *
- */
 template <class KeyType>
 TreeNode<KeyType>::TreeNode(int m_degree,bool newLeaf):count(0),parent(NULL),nextLeafNode(NULL),isLeaf(newLeaf),degree(m_degree)
 {
@@ -141,22 +134,15 @@ TreeNode<KeyType>::TreeNode(int m_degree,bool newLeaf):count(0),parent(NULL),nex
     childs.push_back(NULL);
 }
 
-/**
- * @Deconstructor
- *
- */
+//析构
 template <class KeyType>
 TreeNode<KeyType>::~TreeNode()
 {
 
 }
 
-/**
- * Test if this node is the root or not.
- *
- * @return bool the flag that whether this node is the root or not
- *
- */
+//检查当前节点是不是根
+
 template <class KeyType>
 bool TreeNode<KeyType>::isRoot()
 {
@@ -164,15 +150,9 @@ bool TreeNode<KeyType>::isRoot()
     else return true;
 }
 
-/**
- * Search the key in the node
- *
- * @param KeyType
- * @param size_t return the position of the node by reference
- *
- * @return bool the flag that whether the key exists in the node
- *
- */
+//搜索节点中的值，返回该值是否在节点中
+//size_t the position of the node by reference
+
 template <class KeyType>
 bool TreeNode<KeyType>::search(KeyType key,size_t &index)
 {
@@ -256,14 +236,8 @@ bool TreeNode<KeyType>::search(KeyType key,size_t &index)
     return false;
 }
 
-/**
- * Splite this node to two and the new node will be the next node.
- *
- * @param KeyType & the key reference returns the key that will go to the upper level
- *
- * @return TreeNode *
- *
- */
+//把当前节点分成两个
+//KeyType & the key reference returns the key that will go to the upper level
 template <class KeyType>
 TreeNode<KeyType>* TreeNode<KeyType>::splite(KeyType &key)
 {
@@ -275,10 +249,10 @@ TreeNode<KeyType>* TreeNode<KeyType>::splite(KeyType &key)
         exit(2);
     }
 
-    if(isLeaf) // this is a leaf node
+    if(isLeaf) // 这是一个叶子
     {
         key = keys[minmumNode + 1];
-        for(size_t i = minmumNode + 1;i < degree;i ++) // copy the right hand of the keys to the new node
+        for(size_t i = minmumNode + 1;i < degree;i ++)
         {
             newNode->keys[i-minmumNode-1] = keys[i];
             keys[i] = KeyType();
@@ -314,14 +288,8 @@ TreeNode<KeyType>* TreeNode<KeyType>::splite(KeyType &key)
     return newNode;
 }
 
-/**
- * Add the key in the branch node and return the position added.
- *
- * @param KeyType &
- *
- * @return size_t the position to insert
- *
- */
+//向节点中添加值，返回添加的值的位置
+
 template <class KeyType>
 size_t TreeNode<KeyType>::add(KeyType &key)
 {
@@ -331,16 +299,16 @@ size_t TreeNode<KeyType>::add(KeyType &key)
         count ++;
         return 0;
     }
-    else //count > 0
+    else
     {
-        size_t index = 0; // record the index of the tree
+        size_t index = 0;
         bool exist = search(key, index);
         if(exist)
         {
             cout << "Error:In add(Keytype &key),key has already in the tree!" << endl;
             exit(3);
         }
-        else // add the key into the node
+        else
         {
             for(size_t i = count;i > index;i --)
                 keys[i] = keys[i-1];
@@ -348,7 +316,7 @@ size_t TreeNode<KeyType>::add(KeyType &key)
 
             for(size_t i = count + 1;i > index+1;i --)
                 childs[i] = childs[i-1];
-            childs[index+1] = NULL; // this child will link to another node
+            childs[index+1] = NULL;
             count ++;
 
             return index;
@@ -356,15 +324,9 @@ size_t TreeNode<KeyType>::add(KeyType &key)
     }
 }
 
-/**
- * Add the key in the leaf node and return the position added.
- *
- * @param Keytype &
- * @param offsetNumber the value
- *
- * @return size_t the position to insert
- *
- */
+//向叶子中添加值，返回添加的值的位置
+//offsetNumber the value
+
 template <class KeyType>
 size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
 {
@@ -380,16 +342,16 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
         count ++;
         return 0;
     }
-    else //count > 0
+    else
     {
-        size_t index = 0; // record the index of the tree
+        size_t index = 0; // 记录树的位置
         bool exist = search(key, index);
         if(exist)
         {
             cout << "Error:In add(Keytype &key, offsetNumber val),key has already in the tree!" << endl;
             exit(3);
         }
-        else // add the key into the node
+        else
         {
             for(size_t i = count;i > index;i --)
             {
@@ -404,14 +366,9 @@ size_t TreeNode<KeyType>::add(KeyType &key,offsetNumber val)
     }
 }
 
-/**
- * Delete the key-value or key-child by the position.
- *
- * @param size_t the position to delete
- *
- * @return bool the falg that delation successes or not
- *
- */
+//删除键值或键的孩子
+//size_t the position to delete
+
 template <class KeyType>
 bool TreeNode<KeyType>::removeAt(size_t index)
 {
@@ -432,7 +389,7 @@ bool TreeNode<KeyType>::removeAt(size_t index)
             keys[count-1] = KeyType();
             vals[count-1] = offsetNumber();
         }
-        else // is nonleaf
+        else
         {
             for(size_t i = index;i < count-1;i ++)
                 keys[i] = keys[i+1];
@@ -450,14 +407,7 @@ bool TreeNode<KeyType>::removeAt(size_t index)
 }
 
 #ifdef _DEBUG
-/**
- * For debug, print the whole tree
- *
- * @param
- *
- * @return void
- *
- */
+//打印整个树
 template <class KeyType>
 void TreeNode<KeyType>::debug_print()
 {
@@ -493,17 +443,11 @@ void TreeNode<KeyType>::debug_print()
 }
 #endif
 
-//******** The definition of the functions of the class BPlusTree **********
+//******** B+树中的类型定义 **********
 
 
-/**
- * Constructor: init the tree, allocate the memory of the root and then,if users have created the tree before, read from disk and rebuild it.
- *
- * @param string m_name
- * @param int keysize
- * @param int m_degree
- *
- */
+//构造器
+
 template <class KeyType>
 BPlusTree<KeyType>::BPlusTree(string m_name,int keysize,int m_degree):fileName(m_name),keyCount(0),level(0),nodeCount(0),root(NULL),leafHead(NULL),keySize(keysize),file(NULL),degree(m_degree)
 {
@@ -511,10 +455,7 @@ BPlusTree<KeyType>::BPlusTree(string m_name,int keysize,int m_degree):fileName(m
     readFromDiskAll();
 }
 
-/**
- * Deconstrucor: free the allocated memory and write back to the disk if required.
- *
- */
+//析构器
 template <class KeyType>
 BPlusTree<KeyType>:: ~BPlusTree()
 {
@@ -524,12 +465,8 @@ BPlusTree<KeyType>:: ~BPlusTree()
     level = 0;
 }
 
-/**
- * Init the tree,allocate memory for the root node.
- *
- * @return void
- *
- */
+//初始化树，分配节点的空间
+
 template <class KeyType>
 void BPlusTree<KeyType>::init_tree()
 {
@@ -540,21 +477,13 @@ void BPlusTree<KeyType>::init_tree()
     leafHead = root;
 }
 
-/**
- * Search the node to its leaf level to find the node contains the key
- *
- * @param Node
- * @param KeyType&
- * @param searchNodeParse& return the searching information by reference
- *
- * @return
- *
- */
+//向叶子层搜索节点，以寻找包含值的节点
+
 template <class KeyType>
 void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp)
 {
     size_t index = 0;
-    if(pNode->search(key,index)) // find the key in the node
+    if(pNode->search(key,index)) // 找节点中的值
     {
         if(pNode->isLeaf)
         {
@@ -562,7 +491,7 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
             snp.index = index;
             snp.ifFound = true;
         }
-        else // the node is not a leaf, continue search until the leaf level
+        else
         {
             pNode = pNode -> childs[index + 1];
             while(!pNode->isLeaf)
@@ -575,7 +504,7 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
         }
 
     }
-    else // can not find the key in the node
+    else //找不到
     {
         if(pNode->isLeaf)
         {
@@ -590,15 +519,8 @@ void BPlusTree<KeyType>::findToLeaf(Node pNode,KeyType key,searchNodeParse & snp
     }
 }
 
-/**
- * Insert the key in right position.Then, adjust the whole tree for the rules of b+ tree.
- *
- * @param KeyType&
- * @param offsetNumber the value
- *
- * @return bool the flag that the insertion successes or not
- *
- */
+//在合适的位置添加值，再调整结构
+
 template <class KeyType>
 bool BPlusTree<KeyType>::insertKey(KeyType &key,offsetNumber val)
 {
@@ -622,14 +544,8 @@ bool BPlusTree<KeyType>::insertKey(KeyType &key,offsetNumber val)
     }
 }
 
-/**
- * Adjust the node after insertion. Rrecursively call this function itself if the father node contradicts the rules.
- *
- * @param Node the pointer pointing to the node
- *
- * @return bool the flag
- *
- */
+//添加后调整节点，递归调用
+
 template <class KeyType>
 bool BPlusTree<KeyType>::adjustAfterinsert(Node pNode)
 {
@@ -637,7 +553,7 @@ bool BPlusTree<KeyType>::adjustAfterinsert(Node pNode)
     Node newNode = pNode->splite(key);
     nodeCount ++;
 
-    if(pNode->isRoot()) // the node is the root
+    if(pNode->isRoot())
     {
         Node root = new TreeNode<KeyType>(degree,false);
         if(root == NULL)
@@ -657,8 +573,9 @@ bool BPlusTree<KeyType>::adjustAfterinsert(Node pNode)
             root->childs[1] = newNode;
             return true;
         }
-    }// end root
-    else // if it is not the root
+    }
+    else
+        //如果不是节点
     {
         Node parent = pNode->parent;
         size_t index = parent->add(key);
@@ -672,14 +589,8 @@ bool BPlusTree<KeyType>::adjustAfterinsert(Node pNode)
     }
 }
 
-/**
- * Search the tree to find the value of specific key
- *
- * @param KeyType&
- *
- * @return offsetnumber. The value of the key, -1 means not found in the tree
- *
- */
+//搜索树以寻找指定键值
+
 template <class KeyType>
 offsetNumber BPlusTree<KeyType>::search(KeyType& key)
 {
@@ -688,7 +599,7 @@ offsetNumber BPlusTree<KeyType>::search(KeyType& key)
     findToLeaf(root, key, snp);
     if(!snp.ifFound)
     {
-        return -1; // Don't find the key in the tree;
+        return -1; //没找到
     }
     else
     {
@@ -697,14 +608,8 @@ offsetNumber BPlusTree<KeyType>::search(KeyType& key)
 
 }
 
-/**
- * Delete the key-value or key-child by the inputed key.Then adjust the whole tree if required.
- *
- * @param KeyType&
- *
- * @return bool the flag
- *
- */
+//删除指定键值，再调整结构
+
 template <class KeyType>
 bool BPlusTree<KeyType>::deleteKey(KeyType &key)
 {
@@ -722,7 +627,7 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
             cout << "ERROR: In deleteKey, no keys in the tree " << fileName << "!" << endl;
             return false;
         }
-        else // find the key in the leaf node
+        else
         {
             if(snp.pNode->isRoot())
             {
@@ -732,9 +637,9 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
             }
             else
             {
-                if(snp.index == 0 && leafHead != snp.pNode) // the key exist in the branch.
+                if(snp.index == 0 && leafHead != snp.pNode)
                 {
-                    // go to upper level to update the branch level
+
                     size_t index = 0;
 
                     Node now_parent = snp.pNode->parent;
@@ -748,7 +653,7 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
                             break;
                         }
                         if_found_inBranch = now_parent->search(key,index);
-                    }// end of search in the branch
+                    }
 
                     now_parent -> keys[index] = snp.pNode->keys[1];
 
@@ -757,7 +662,7 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
                     return adjustAfterDelete(snp.pNode);
 
                 }
-                else //this key must just exist in the leaf too.
+                else
                 {
                     snp.pNode->removeAt(snp.index);
                     keyCount--;
@@ -768,14 +673,8 @@ bool BPlusTree<KeyType>::deleteKey(KeyType &key)
     }
 }
 
-/**
- * Adjust the node after deletion. Rrecursively call this function itself if the father node contradicts the rules.
- *
- * @param Node the pointer pointing to the node
- *
- * @return bool the flag
- *
- */
+//删除后调整结构，递归调用
+
 template <class KeyType>
 bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
 {
@@ -786,13 +685,13 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
     }
     if(pNode->isRoot())
     {
-        if(pNode->count > 0) //do not need to adjust
+        if(pNode->count > 0) //不需要调整
         {
             return true;
         }
         else
         {
-            if(root->isLeaf) //the true will be an empty tree
+            if(root->isLeaf) //根是叶子
             {
                 delete pNode;
                 root = NULL;
@@ -800,7 +699,7 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                 level --;
                 nodeCount --;
             }
-            else // root will be the leafhead
+            else //根不是叶子
             {
                 root = pNode -> childs[0];
                 root -> parent = NULL;
@@ -809,7 +708,7 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                 nodeCount --;
             }
         }
-    }// end root
+    }
     else
     {
         Node parent = pNode->parent,brother = NULL;
@@ -818,10 +717,10 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
             size_t index = 0;
             parent->search(pNode->keys[0],index);
 
-            if((parent->childs[0] != pNode) && (index + 1 == parent->count)) //choose the left brother to merge or replace
+            if((parent->childs[0] != pNode) && (index + 1 == parent->count)) //向左兄弟合并
             {
                 brother = parent->childs[index];
-                if(brother->count > minmumKey) // choose the most right key of brother to add to the left hand of the pnode
+                if(brother->count > minmumKey) //选择左兄弟最大的键值并取出、合并
                 {
                     for(size_t i = pNode->count;i > 0;i --)
                     {
@@ -836,8 +735,8 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     parent->keys[index] = pNode->keys[0];
                     return true;
 
-                } // end add
-                else // merge the node with its brother
+                }
+                else //合并
                 {
                     parent->removeAt(index);
 
@@ -853,16 +752,16 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     nodeCount --;
 
                     return adjustAfterDelete(parent);
-                }// end merge
+                }
 
-            }// end of the left brother
-            else // choose the right brother
+            }
+            else //选择右兄弟
             {
                 if(parent->childs[0] == pNode)
                     brother = parent->childs[1];
                 else
                     brother = parent->childs[index+2];
-                if(brother->count > minmumKey)//// choose the most left key of brother to add to the right hand of the node
+                if(brother->count > minmumKey)//选择右兄弟最小的值并合并
                 {
                     pNode->keys[pNode->count] = brother->keys[0];
                     pNode->vals[pNode->count] = brother->vals[0];
@@ -874,8 +773,8 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                         parent->keys[index+1] = brother->keys[0];
                     return true;
 
-                }// end add
-                else // merge the node with its brother
+                }
+                else // 向兄弟合并
                 {
                     for(int i = 0;i < brother->count;i ++)
                     {
@@ -892,20 +791,20 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     nodeCount --;
 
                     return adjustAfterDelete(parent);
-                }//end merge
-            }// end of the right brother
+                }
+            }
 
-        }// end leaf
-        else // branch node
+        }
+        else
         {
             size_t index = 0;
             parent->search(pNode->childs[0]->keys[0],index);
-            if((parent->childs[0] != pNode) && (index + 1 == parent->count)) // choose the left brother to merge or replace
+            if((parent->childs[0] != pNode) && (index + 1 == parent->count))
             {
                 brother = parent->childs[index];
-                if(brother->count > minmumKey - 1) // choose the most right key and child to add to the left hand of the pnode
+                if(brother->count > minmumKey - 1)
                 {
-                    //modify the pnode
+
                     pNode->childs[pNode->count+1] = pNode->childs[pNode->count];
                     for(size_t i = pNode->count;i > 0;i --)
                     {
@@ -915,9 +814,9 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     pNode->childs[0] = brother->childs[brother->count];
                     pNode->keys[0] = parent->keys[index];
                     pNode->count ++;
-                    //modify the father
+
                     parent->keys[index]= brother->keys[brother->count-1];
-                    //modify the brother and child
+
                     if(brother->childs[brother->count])
                     {
                         brother->childs[brother->count]->parent = pNode;
@@ -926,10 +825,10 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
 
                     return true;
 
-                }// end add
-                else // merge the node with its brother
+                }
+                else
                 {
-                    //modify the brother and child
+
                     brother->keys[brother->count] = parent->keys[index];
                     parent->removeAt(index);
                     brother->count ++;
@@ -952,34 +851,34 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
                     return adjustAfterDelete(parent);
                 }
 
-            }// end of the left brother
-            else // choose the right brother
+            }
+            else
             {
                 if(parent->childs[0] == pNode)
                     brother = parent->childs[1];
                 else
                     brother = parent->childs[index+2];
-                if(brother->count > minmumKey - 1)// choose the most left key and child to add to the right hand of the pnode
+                if(brother->count > minmumKey - 1)
                 {
-                    //modifty the pnode and child
+
                     pNode->childs[pNode->count+1] = brother->childs[0];
                     pNode->keys[pNode->count] = brother->keys[0];
                     pNode->childs[pNode->count+1]->parent = pNode;
                     pNode->count ++;
-                    //modify the fater
+
                     if(pNode == parent->childs[0])
                         parent->keys[0] = brother->keys[0];
                     else
                         parent->keys[index+1] = brother->keys[0];
-                    //modify the brother
+
                     brother->childs[0] = brother->childs[1];
                     brother->removeAt(0);
 
                     return true;
                 }
-                else // merge the node with its brother
+                else
                 {
-                    //modify the pnode and child
+
                     pNode->keys[pNode->count] = parent->keys[index];
 
                     if(pNode == parent->childs[0])
@@ -1016,19 +915,13 @@ bool BPlusTree<KeyType>::adjustAfterDelete(Node pNode)
     return false;
 }
 
-/**
- * Drop the tree whose root is the inputed node.
- *
- * @param Node the pointer pointing to the node
- *
- * @return void
- *
- */
+//删除指定根节点的树
+
 template <class KeyType>
 void BPlusTree<KeyType>::dropTree(Node node)
 {
     if(!node) return;
-    if(!node->isLeaf) //if it has child
+    if(!node->isLeaf)
     {
         for(size_t i=0;i <= node->count;i++)
         {
@@ -1041,12 +934,8 @@ void BPlusTree<KeyType>::dropTree(Node node)
     return;
 }
 
-/**
- * Read the whole existing tree from the disk.
- *
- * @return void
- *
- */
+//从磁盘读取整个树
+
 template <class KeyType>
 void BPlusTree<KeyType>::readFromDiskAll()
 {
@@ -1066,14 +955,8 @@ void BPlusTree<KeyType>::readFromDiskAll()
 
 }
 
-/**
- * Read a node from the disk.
- *
- * @param blockNode*
- *
- * @return void
- *
- */
+//从磁盘读取一个节点
+
 template <class KeyType>
 void BPlusTree<KeyType>::readFromDisk(blockNode* btmp)
 {
@@ -1095,12 +978,8 @@ void BPlusTree<KeyType>::readFromDisk(blockNode* btmp)
 
 }
 
-/**
- * Write the whole tree data to the disk.
- *
- * @return void
- *
- */
+//把整个树存放到磁盘
+
 template <class KeyType>
 void BPlusTree<KeyType>::writtenbackToDiskAll()
 {
@@ -1124,7 +1003,7 @@ void BPlusTree<KeyType>::writtenbackToDiskAll()
         btmp = bm.getNextBlock(file, btmp);
         ntmp = ntmp->nextLeafNode;
     }
-    while(1)// delete the empty node
+    while(1)// 删除空节点
     {
         if(btmp->ifbottom)
             break;

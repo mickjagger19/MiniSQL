@@ -17,11 +17,8 @@
 using namespace std;
 
 
-/**
- *  Constructor Function: create the existing index by the index files.
- *
- *  @param API*
- */
+//构造器
+
 IndexManager::IndexManager(API *m_api)
 {
     api = m_api;
@@ -34,13 +31,11 @@ IndexManager::IndexManager(API *m_api)
 }
 
 
-/**
- *  Destructor Function: write the dirty indexs back to the disk.
- *
- */
+//析构器
+
 IndexManager::~IndexManager()
 {
-    //write back to the disk
+
     for(intMap::iterator itInt = indexIntMap.begin();itInt != indexIntMap.end(); itInt ++)
     {
         if(itInt->second)
@@ -68,16 +63,8 @@ IndexManager::~IndexManager()
 }
 
 
-/**
- * Create index on the specific type.
- * If there exists the index before, read data from file path and then rebuild the b+ tree.
- *
- * @param string the file path
- * @param int type
- *
- * @return void
- *
- */
+//根据指定类型建立index索引
+
 void IndexManager::createIndex(string filePath,int type)
 {
     int keySize = getKeySize(type);
@@ -100,14 +87,8 @@ void IndexManager::createIndex(string filePath,int type)
 
 }
 
-/**
- * Drop the specific index.
- *
- * @param
- *
- * @return void
- *
- */
+//删除指定index
+
 void IndexManager::dropIndex(string filePath,int type)
 {
     if(type == TYPE_INT)
@@ -138,7 +119,7 @@ void IndexManager::dropIndex(string filePath,int type)
             indexFloatMap.erase(itFloat);
         }
     }
-    else // string
+    else
     {
         stringMap::iterator itString = indexStringMap.find(filePath);
         if(itString == indexStringMap.end())
@@ -155,17 +136,8 @@ void IndexManager::dropIndex(string filePath,int type)
 
 }
 
-/**
- * Search the b+ tree by the key and return the value of that key.
- * If the key is not in the index, return -1.
- *
- * @param string the file path.
- * @param string key.
- * @param int type
- *
- * @return void
- *
- */
+//在B+树中根据键值搜索
+
 offsetNumber IndexManager::searchIndex(string filePath,string key,int type)
 {
     setKey(type, key);
@@ -197,7 +169,7 @@ offsetNumber IndexManager::searchIndex(string filePath,string key,int type)
 
         }
     }
-    else // string
+    else
     {
         stringMap::iterator itString = indexStringMap.find(filePath);
         if(itString == indexStringMap.end())
@@ -212,17 +184,8 @@ offsetNumber IndexManager::searchIndex(string filePath,string key,int type)
     }
 }
 
-/**
- * Insert the key and value to the b+ tree.
- *
- * @param string the file path
- * @param string key
- * @param offsetNumber the block offset number
- * @param int type
- *
- * @return void
- *
- */
+//向B+树插入值
+
 void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffset,int type)
 {
     setKey(type, key);
@@ -269,15 +232,8 @@ void IndexManager::insertIndex(string filePath,string key,offsetNumber blockOffs
     }
 }
 
-/**
- * Delete the key and its value
- *
- * @param string file path
- * @param int type
- *
- * @return void
- *
- */
+//删除值
+
 void IndexManager::deleteIndexByKey(string filePath,string key,int type)
 {
     setKey(type, key);
@@ -324,15 +280,8 @@ void IndexManager::deleteIndexByKey(string filePath,string key,int type)
     }
 }
 
-/**
- * Get the degree by the type.
- * The tree node size equals to the block size.
- *
- * @param int type
- *
- * @return int the degree
- *
- */
+//根据类型获取degree
+
 int IndexManager::getDegree(int type)
 {
     int degree = bm.getBlockSize()/(getKeySize(type)+sizeof(offsetNumber));
@@ -340,14 +289,8 @@ int IndexManager::getDegree(int type)
     return degree;
 }
 
-/**
- * Get the key size by the type
- *
- * @param int type
- *
- * @return int the key size
- *
- */
+//根据类型获取值的空间大小
+
 int IndexManager::getKeySize(int type)
 {
     if(type == TYPE_FLOAT)
@@ -363,16 +306,8 @@ int IndexManager::getKeySize(int type)
     }
 }
 
-/**
- * Get the key of its type by the inputed string.
- * Users input string whatever type the key is.
- *
- * @param int type
- * @param string key
- *
- * @return void
- *
- */
+//根据输入字符串和类型获取值
+
 void IndexManager::setKey(int type,string key)
 {
     stringstream ss;

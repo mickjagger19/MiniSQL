@@ -10,11 +10,7 @@
 #include <cstring>
 #include <queue>
 
-/**
- *  Constructor Function: allocate memories for the pools
- *                        and init the variable values
- *
-*/
+//构造器
 BufferManager::BufferManager():total_block(0),total_file(0),fileHead(NULL)
 {
     for (int i = 0; i < MAX_FILE_NUM; i ++)
@@ -44,11 +40,7 @@ BufferManager::BufferManager():total_block(0),total_file(0),fileHead(NULL)
     }
 }
 
-/**
- *  Destructor Function: free memories of the pools
- *                        and write back the buffer content if required
- *
- */
+//析构器
 BufferManager::~BufferManager()
 {
     writtenBackToDiskAll();
@@ -62,14 +54,7 @@ BufferManager::~BufferManager()
     }
 }
 
-/**
- * init the fileNode values
- *
- * @param fileNode&  the file your want to init
- *
- * @return void
- *
-*/
+//初始化filenode
 void BufferManager::init_file(fileNode &file)
 {
     file.nextFile = NULL;
@@ -79,14 +64,7 @@ void BufferManager::init_file(fileNode &file)
     memset(file.fileName,0,MAX_FILE_NAME);
 }
 
-/**
- * init the blockNode values
- *
- * @param blockNode&  the block your want to init
- *
- * @return void
- *
- */
+//初始化block
 void BufferManager::init_block(blockNode &block)
 {
     memset(block.address,0,BLOCK_SIZE);
@@ -103,17 +81,10 @@ void BufferManager::init_block(blockNode &block)
     memset(block.fileName,0,MAX_FILE_NAME);
 }
 
-/**
- *  Get a fileNode
- *  1.If the file is already in the list, return this fileNode
- *  2.If the file is not in the list, replace some fileNode, if required, to make more space
- *
- * @param const char*  the file name
- * @param bool  if true, the file will be locked.
- *
- * @return fileNode*
- *
- */
+//获取一个fileNode
+//如果文件已经在列表中了，那么返回fileNode
+//如果文件不在列表中, 就替换
+
 fileNode* BufferManager::getFile(const char * fileName, bool if_pin)
 {
     blockNode * btmp = NULL;
@@ -134,28 +105,28 @@ fileNode* BufferManager::getFile(const char * fileName, bool if_pin)
         }
     }
 
-    // The fileNode is not in the list
-    if(total_file == 0) // No file in the list now
+    // 不在列表中
+    if(total_file == 0) // 列表中没有文件
     {
         ftmp = &file_pool[total_file];
         total_file ++;
         fileHead = ftmp;
     }
-    else if(total_file < MAX_FILE_NUM) // There are empty fileNode in the pool
+    else if(total_file < MAX_FILE_NUM) // 有一些空的fileNode
     {
         ftmp = &file_pool[total_file];
-        // add this fileNode into the tail of the list
+        // 向列表尾部添加
         file_pool[total_file-1].nextFile = ftmp;
         ftmp->preFile = &file_pool[total_file-1];
         total_file ++;
     }
-    else // if total_file >= MAX_FILE_NUM, find one fileNode to replace, write back the block node belonging to the fileNode
+    else
     {
         ftmp = fileHead;
         while(ftmp->pin)
         {
             if(ftmp -> nextFile)ftmp = ftmp->nextFile;
-            else //no enough file node in the pool
+            else
             {
                 printf("There are no enough file node in the pool!");
                 exit(2);
@@ -182,19 +153,10 @@ fileNode* BufferManager::getFile(const char * fileName, bool if_pin)
     return ftmp;
 }
 
-/**
- *  Get a block node
- *  1.If the block is already in the list, return this blockNode
- *  2.If the block is not in the list, replace some fileNode, using LRU replacement, if required, to make more space.
- *  3.Only if the block is dirty, he will be written back to disk when been reaplaced.
- *
- * @param fileNode * the file you want to add the block into.
- * @param blockNode  the position that the Node will added to.
- * @param bool  if true, the block will be locked.
- *
- * @return blockNode*
- *
- */
+//获取一个fileNode
+//如果文件已经在列表中了，那么返回fileNode
+//如果文件不在列表中, 就替换
+
 blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_pin)
 {
     const char * fileName = file->fileName;
@@ -204,7 +166,7 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
         btmp = &block_pool[0];
         total_block ++;
     }
-    else if(total_block < MAX_BLOCK_NUM) // there are empty blocks in the block pool
+    else if(total_block < MAX_BLOCK_NUM)
     {
         for(int i = 0 ;i < MAX_BLOCK_NUM;i ++)
         {
@@ -218,7 +180,7 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
                 continue;
         }
     }
-    else // total_block >= MAX_BLOCK_NUM,which means that there are no empty block so we must replace one.
+    else
     {
         int i = replaced_block;
         while (true)
@@ -229,24 +191,24 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
             {
                 if(block_pool[i].reference == true)
                     block_pool[i].reference = false;
-                else //choose this block for replacement
+                else
                 {
                     btmp = &block_pool[i];
                     if(btmp->nextBlock) btmp -> nextBlock -> preBlock = btmp -> preBlock;
                     if(btmp->preBlock) btmp -> preBlock -> nextBlock = btmp -> nextBlock;
                     if(file->blockHead == btmp) file->blockHead = btmp->nextBlock;
-                    replaced_block = i; //record the replaced block and begin from the next block the next time.
+                    replaced_block = i;
 
                     writtenBackToDisk(btmp->fileName, btmp);
                     init_block(*btmp);
                     break;
                 }
             }
-            else // this block is been locked
+            else
                 continue;
         }
     }
-    //add the block into the block list
+
     if(position != NULL && position->nextBlock == NULL)
     {
         btmp -> preBlock = position;
@@ -261,10 +223,10 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
         position->nextBlock=btmp;
         btmp -> offsetNum = position -> offsetNum + 1;
     }
-    else // the block will be the head of the list
+    else // 当前block将作为列表头
     {
         btmp -> offsetNum = 0;
-        if(file->blockHead) // if the file has a wrong block head
+        if(file->blockHead) //如果文件的blockhead不正确
         {
             file->blockHead -> preBlock = btmp;
             btmp->nextBlock = file->blockHead;
@@ -279,7 +241,7 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
     }
     strncpy(btmp->fileName, fileName, MAX_FILE_NAME);
 
-    //read the file content to the block
+
     FILE * fileHandle;
     if((fileHandle = fopen(fileName, "ab+")) != NULL)
     {
@@ -304,22 +266,18 @@ blockNode* BufferManager::getBlock(fileNode * file,blockNode *position, bool if_
     return btmp;
 }
 
-/**
- * Flush the block node to the disk, if the block is not dirty, do nothing.
- *
- * @param const char*  the file name
- * @param blockNode&  the block your want to flush
- *
- * @return void
- *
- */
+//将block存到磁盘
+//const char*  the file name
+//blockNode&  the block your want to flush
+
+
 void BufferManager::writtenBackToDisk(const char* fileName,blockNode* block)
 {
-    if(!block->dirty) // this block is not been modified, so it do not need to written back to files
+    if(!block->dirty) // 当前block已经被修改, 所以不需要存回文件
     {
         return;
     }
-    else // written back to the file
+    else //存回文件
     {
         FILE * fileHandle = NULL;
         if((fileHandle = fopen(fileName, "rb+")) != NULL)
@@ -347,12 +305,8 @@ void BufferManager::writtenBackToDisk(const char* fileName,blockNode* block)
     }
 }
 
-/**
- * Flush all block node in the list to the disk
- *
- * @return void
- *
- */
+//将列表中的所有blockNode存到磁盘
+
 void BufferManager::writtenBackToDiskAll()
 {
     blockNode *btmp = NULL;
@@ -373,15 +327,10 @@ void BufferManager::writtenBackToDiskAll()
     }
 }
 
-/**
- * Get the next block node of the node inputed
- *
- * @param fileNode* the file you want to add a block
- * @param blockNode&  the block your want to be added to
- *
- * @return blockNode*
- *
- */
+//返回输入节点的下一个block节点
+//fileNode* the file you want to add a block
+// blockNode&  the block your want to be added to
+
 blockNode* BufferManager::getNextBlock(fileNode* file,blockNode* block)
 {
     if(block->nextBlock == NULL)
@@ -402,20 +351,14 @@ blockNode* BufferManager::getNextBlock(fileNode* file,blockNode* block)
     }
 }
 
-/**
- * Get the head block of the file
- *
- * @param fileNode*
- *
- * @return blockNode*
- *
- */
+//获取文件的头block
+
 blockNode* BufferManager::getBlockHead(fileNode* file)
 {
     blockNode* btmp = NULL;
     if(file->blockHead != NULL)
     {
-        if(file->blockHead->offsetNum == 0) //The right offset of the first block
+        if(file->blockHead->offsetNum == 0)
         {
             btmp = file->blockHead;
         }
@@ -424,22 +367,16 @@ blockNode* BufferManager::getBlockHead(fileNode* file)
             btmp = getBlock(file, NULL);
         }
     }
-    else// If the file have no block head, get a new block node for it
+    else//如果当前文件没有block头，那么新建一个
+
     {
         btmp = getBlock(file,NULL);
     }
     return btmp;
 }
 
-/**
- * Get the block of the file by offset number
- *
- * @param fileNode*
- * @param int offsetNumber
- *
- * @return blockNode*
- *
- */
+//获取文件的block，利用offset number
+
 blockNode* BufferManager::getBlockByOffset(fileNode* file, int offsetNumber)
 {
     blockNode* btmp = NULL;
@@ -456,13 +393,8 @@ blockNode* BufferManager::getBlockByOffset(fileNode* file, int offsetNumber)
     }
 }
 
-/**
- * delete the file node and its block node
- *
- * @param const char * fileName
- *
- * @return
- */
+//删除文件节点和block节点
+
 void BufferManager::delete_fileNode(const char * fileName)
 {
     fileNode* ftmp = getFile(fileName);
@@ -500,15 +432,9 @@ void BufferManager::set_pin(fileNode &file,bool pin)
     file.pin = pin;
 }
 
-/**
- * Set the block a dirty node
- * Must call this function if modify the block node
- *
- * @param blockNode&  the block your want to be added modify
- *
- * @return void
- *
- */
+//将block设置为dirty（已经被修改过的）
+//blockNode&  the block your want to be added modify
+
 void BufferManager::set_dirty(blockNode &block)
 {
     block.dirty = true;
@@ -537,15 +463,8 @@ size_t BufferManager::get_usingSize(blockNode & block)
 
 }
 
-/**
- *
- * Get the content of the block except the block head
- *
- * @param blockNode&
- *
- * @return
- *
- */
+//获取block的内容（除了block头）
+
 char* BufferManager::get_content(blockNode& block)
 {
     return block.address + sizeof(size_t);

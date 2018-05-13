@@ -102,14 +102,10 @@ int RecordManager::recordInsert(string tableName,char* record, int recordSize)
     return -1;
 }
 
-/**
- *
- * print all record of a table meet requirement
- * @param tableName: name of table
- * @param attributeNameVector: the attribute list
- * @param conditionVector: the conditions list
- * @return int: the number of the record meet requirements(-1 represent error)
- */
+//打印表中所有满足条件的记录
+//tableName: name of table
+//attributeNameVector: the attribute list
+//conditionVector: the conditions list
 
 int RecordManager::recordAllShow(string tableName, vector<string>* attributeNameVector,  vector<Condition>* conditionVector)
 {
@@ -139,15 +135,11 @@ int RecordManager::recordAllShow(string tableName, vector<string>* attributeName
     return -1;
 }
 
-/**
- *
- * print record of a table in a block
- * @param tableName: name of table
- * @param attributeNameVector: the attribute list
- * @param conditionVector: the conditions list
- * @param blockOffset: the block's offsetNum
- * @return int: the number of the record meet requirements in the block(-1 represent error)
- */
+//打印blaock中table中的记录
+//tableName: name of table
+//attributeNameVector: the attribute list
+//onditionVector: the conditions list
+//blockOffset: the block's offsetNum
 
 int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNameVector, vector<Condition>* conditionVector, int blockOffset)
 {
@@ -163,15 +155,8 @@ int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNa
     }
 }
 
-/**
- *
- * print record of a table in a block
- * @param tableName: name of table
- * @param attributeNameVector: the attribute list
- * @param conditionVector: the conditions list
- * @param block: search record in the block
- * @return int: the number of the record meet requirements in the block(-1 represent error)
- */
+//打印blaock中table中的记录
+
 int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNameVector, vector<Condition>* conditionVector, blockNode* block)
 {
 
@@ -193,7 +178,7 @@ int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNa
 
     while (recordBegin - blockBegin  < usingSize)
     {
-        //if the recordBegin point to a record
+        //如果recordBegin指向一条记录
 
         if(recordConditionFit(recordBegin, recordSize, &attributeVector, conditionVector))
         {
@@ -210,13 +195,10 @@ int RecordManager::recordBlockShow(string tableName, vector<string>* attributeNa
     return count;
 }
 
-/**
- *
- * find the number of all record of a table meet requirement
- * @param tableName: name of table
- * @param conditionVector: the conditions list
- * @return int: the number of the record meet requirements(-1 represent error)
- */
+//寻找表中所有满足条件的记录数
+//tableName: name of table
+//conditionVector: the conditions list
+
 int RecordManager::recordAllFind(string tableName, vector<Condition>* conditionVector)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -245,14 +227,11 @@ int RecordManager::recordAllFind(string tableName, vector<Condition>* conditionV
     return -1;
 }
 
-/**
- *
- * find the number of record of a table in a block
- * @param tableName: name of table
- * @param block: search record in the block
- * @param conditionVector: the conditions list
- * @return int: the number of the record meet requirements in the block(-1 represent error)
- */
+//寻找一个block的一个表中的记录数
+//tableName: name of table
+//block: search record in the block
+//conditionVector: the conditions list
+
 int RecordManager::recordBlockFind(string tableName, vector<Condition>* conditionVector, blockNode* block)
 {
     //if block is null, return -1
@@ -270,7 +249,7 @@ int RecordManager::recordBlockFind(string tableName, vector<Condition>* conditio
 
     while (recordBegin - bm.get_content(*block)  < bm.get_usingSize(*block))
     {
-        //if the recordBegin point to a record
+
 
         if(recordConditionFit(recordBegin, recordSize, &attributeVector, conditionVector))
         {
@@ -284,13 +263,10 @@ int RecordManager::recordBlockFind(string tableName, vector<Condition>* conditio
     return count;
 }
 
-/**
- *
- * delete all record of a table meet requirement
- * @param tableName: name of table
- * @param conditionVector: the conditions list
- * @return int: the number of the record meet requirements(-1 represent error)
- */
+//删除表中所有满足条件的记录
+//tableName: name of table
+//onditionVector: the conditions list
+
 int RecordManager::recordAllDelete(string tableName, vector<Condition>* conditionVector)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -320,14 +296,11 @@ int RecordManager::recordAllDelete(string tableName, vector<Condition>* conditio
     return -1;
 }
 
-/**
- *
- * delete record of a table in a block
- * @param tableName: name of table
- * @param conditionVector: the conditions list
- * @param blockOffset: the block's offsetNum
- * @return int: the number of the record meet requirements in the block(-1 represent error)
- */
+//删除block中一个表的记录
+//tableName: name of table
+//conditionVector: the conditions list
+//blockOffset: the block's offsetNum
+
 int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* conditionVector, int blockOffset)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -342,14 +315,8 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
     }
 }
 
-/**
- *
- * delete record of a table in a block
- * @param tableName: name of table
- * @param conditionVector: the conditions list
- * @param block: search record in the block
- * @return int: the number of the record meet requirements in the block(-1 represent error)
- */
+//删除block中一个表的记录
+
 int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* conditionVector, blockNode* block)
 {
     //if block is null, return -1
@@ -367,7 +334,7 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
 
     while (recordBegin - bm.get_content(*block) < bm.get_usingSize(*block))
     {
-        //if the recordBegin point to a record
+
 
         if(recordConditionFit(recordBegin, recordSize, &attributeVector, conditionVector))
         {
@@ -392,13 +359,10 @@ int RecordManager::recordBlockDelete(string tableName,  vector<Condition>* condi
     return count;
 }
 
-/**
- *
- * insert the index of all record of the table
- * @param tableName: name of table
- * @param indexName: name of index
- * @return int: the number of the record meet requirements(-1 represent error)
- */
+//添加一个表中所有记录的index
+//tableName: name of table
+//indexName: name of index
+
 int RecordManager::indexRecordAllAlreadyInsert(string tableName,string indexName)
 {
     fileNode *ftmp = bm.getFile(tableFileNameGet(tableName).c_str());
@@ -428,14 +392,8 @@ int RecordManager::indexRecordAllAlreadyInsert(string tableName,string indexName
 }
 
 
-/**
- *
- * insert the index of a record of a table in a block
- * @param tableName: name of table
- * @param indexName: name of index
- * @param block: search record in the block
- * @return int: the number of the record meet requirements in the block(-1 represent error)
- */
+//向block中添加某条记录的index
+
 int RecordManager::indexRecordBlockAlreadyInsert(string tableName,string indexName,  blockNode* block)
 {
     //if block is null, return -1
@@ -479,15 +437,8 @@ int RecordManager::indexRecordBlockAlreadyInsert(string tableName,string indexNa
     return count;
 }
 
-/**
- *
- * judge if the record meet the requirement
- * @param recordBegin: point to a record
- * @param recordSize: size of the record
- * @param attributeVector: the attribute list of the record
- * @param conditionVector: the conditions
- * @return bool: if the record fit the condition
- */
+//判断记录是否复合条件
+
 bool RecordManager::recordConditionFit(char* recordBegin,int recordSize, vector<Attribute>* attributeVector,vector<Condition>* conditionVector)
 {
     if (conditionVector == NULL) {
@@ -526,14 +477,12 @@ bool RecordManager::recordConditionFit(char* recordBegin,int recordSize, vector<
     return true;
 }
 
-/**
- *
- * print value of record
- * @param recordBegin: point to a record
- * @param recordSize: size of the record
- * @param attributeVector: the attribute list of the record
- * @param attributeVector: the name list of all attribute you want to print
- */
+//打印记录的值
+//recordBegin: point to a record
+//recordSize: size of the record
+//attributeVector: the attribute list of the record
+//attributeVector: the name list of all attribute you want to print
+
 void RecordManager::recordPrint(char* recordBegin, int recordSize, vector<Attribute>* attributeVector, vector<string> *attributeNameVector)
 {
     int type;
@@ -622,52 +571,42 @@ void RecordManager::contentPrint(char * content, int type)
 
 }
 
-/**
- *
- * judge if the content meet the requirement
- * @param content: point to content
- * @param type: type of content
- * @param condition: condition
- * @return bool: the content if meet
- */
+//判断内容是否符合条件
+//content: point to content
+//type: type of content
+//condition: condition
+
 bool RecordManager::contentConditionFit(char* content,int type,Condition* condition)
 {
     if (type == Attribute::TYPE_INT)
     {
-        //if the content is a int
-        int tmp = *((int *) content);   //get content value by point
+
+        int tmp = *((int *) content);
         return condition->ifRight(tmp);
     }
     else if (type == Attribute::TYPE_FLOAT)
     {
-        //if the content is a float
-        float tmp = *((float *) content);   //get content value by point
+
+        float tmp = *((float *) content);
         return condition->ifRight(tmp);
     }
     else
     {
-        //if the content is a string
+
         return condition->ifRight(content);
     }
     return true;
 }
 
-/**
- *
- * get a index's file name
- * @param indexName: name of index
- */
+//获取index的文件名
+
 string RecordManager::indexFileNameGet(string indexName)
 {
     string tmp = "";
     return "INDEX_FILE_"+indexName;
 }
 
-/**
- *
- * get a table's file name
- * @param tableName: name of table
- */
+//返回一张表的文件名
 string RecordManager::tableFileNameGet(string tableName)
 {
     string tmp = "";

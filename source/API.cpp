@@ -43,11 +43,8 @@ void API::tableDrop(string tableName)
     }
 }
 
-/**
- *
- * drop a index
- * @param indexName: name of index
- */
+//删除一个index
+//indexName: name of index
 void API::indexDrop(string indexName)
 {
     if (cm->findIndex(indexName) != INDEX_FILE)
@@ -77,13 +74,11 @@ void API::indexDrop(string indexName)
     }
 }
 
-/**
- *
- * create a index
- * @param indexName: name of index
- * @param tableName: name of table
- * @param attributeName: name of attribute in a table
- */
+//创建一个index
+//indexName: name of index
+//tableName: name of table
+//attributeName: name of attribute in a table
+
 void API::indexCreate(string indexName, string tableName, string attributeName)
 {
     if (cm->findIndex(indexName) == INDEX_FILE)
@@ -95,10 +90,6 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
     if (!tableExist(tableName)) return;
 
     vector<Attribute> attributeVector;
-
-
-
-
 
 
     cm->attributeGet(tableName, &attributeVector);
@@ -125,13 +116,13 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
         return;
     }
 
-    //RecordManager to create a index file
+    //RecordManager 用于创建一个index文件
     if (rm->indexCreate(indexName))
     {
-        //CatalogManager to add a index information
+        //CatalogManager 用于添加一个index信息
         cm->addIndex(indexName, tableName, attributeName, type);
 
-        //get type of index
+        //获取index 的类型
         int indexType = cm->getIndexType(indexName);
         if (indexType == -2)
         {
@@ -139,10 +130,10 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
             return;
         }
 
-        //indexManager to create a index tress
+        //indexManager 用于创建一个指数枝条
         im->createIndex(rm->indexFileNameGet(indexName), indexType);
 
-        //recordManager insert already record to index
+        //recordManager 用于添加记录
         rm->indexRecordAllAlreadyInsert(tableName, indexName);
         printf("Create index %s successfully\n", indexName.c_str());
     }
@@ -152,12 +143,12 @@ void API::indexCreate(string indexName, string tableName, string attributeName)
     }
 }
 
-/*建立表
- * @param tableName: 表名
- * @param attributeVector: 属性向量
- * @param primaryKeyName: 主键
- * @param primaryKeyLocation: the primary position in the table
- */
+//建立表
+//tableName: 表名
+//attributeVector: 属性向量
+//primaryKeyName: 主键
+//primaryKeyLocation: the primary position in the table
+
 void API::tableCreate(string tableName, vector<Attribute>* attributeVector, string primaryKeyName,int primaryKeyLocation)
 {
 //    cout << "=======api::tablecreate=======" << endl
@@ -191,25 +182,21 @@ void API::tableCreate(string tableName, vector<Attribute>* attributeVector, stri
     }
 }
 
-/**
- *
- * show all record of attribute in the table and the number of the record
- * @param tableName: name of table
- * @param attributeNameVector: vector of name of attribute
- */
+//展示表中所有属性
+//tableName: name of table
+//attributeNameVector: vector of name of attribute
+
 void API::SelectShow(string tableName, vector<string>* attributeNameVector)
 {
     vector<Condition> conditionVector;
     SelectShow(tableName, attributeNameVector, &conditionVector);
 }
 
-/**
- *
- * show the record matching the coditions of attribute in the table and the number of the record
- * @param tableName: name of table
- * @param attributeNameVector: vector of name of attribute
- * @param conditionVector: vector of condition
- */
+//打印表中满足条件的记录和记录数量
+//tableName: name of table
+//attributeNameVector: vector of name of attribute
+//conditionVector: vector of condition
+
 void API::SelectShow(string tableName, vector<string>* attributeNameVector, vector<Condition>* conditionVector)
 {
     if (cm->findTable(tableName) == TABLE_FILE)
@@ -309,12 +296,10 @@ void API::SelectShow(string tableName, vector<string>* attributeNameVector, vect
     }
 }
 
-/**
- *
- * insert a record to a table
- * @param tableName: name of table
- * @param recordContent: Vector of these content of a record
- */
+//向表中添加记录
+//tableName: name of table
+//recordContent: Vector of these content of a record
+
 void API::recordInsert(string tableName, vector<string>* recordContent)
 {
     if (!tableExist(tableName)) return;
@@ -387,23 +372,20 @@ void API::recordInsert(string tableName, vector<string>* recordContent)
     }
 }
 
-/**
- *
- * delete all record of table
- * @param tableName: name of table
- */
+//删除表中的所有记录
+//tableName: name of table
+//delete from tableName
+
 void API::recordDelete(string tableName)
 {
     vector<Condition> conditionVector;
     recordDelete(tableName, &conditionVector);
 }
 
-/**
- *
- * delete the record matching the coditions in the table
- * @param tableName: name of table
- * @param conditionVector: vector of condition
- */
+//删除表中满足条件的记录
+//tableName: name of table
+//conditionVector: vector of condition
+
 void API::recordDelete(string tableName, vector<Condition>* conditionVector)
 {
     if (!tableExist(tableName)) return;
@@ -447,11 +429,9 @@ void API::recordDelete(string tableName, vector<Condition>* conditionVector)
     printf("Query OK,  %d row in table %s affected ", num, tableName.c_str());
 }
 
-/**
- *
- * get the number of the records in table
- * @param tableName: name of table
- */
+//返回表中的记录数量
+//tableName: name of table
+
 int API::recordNumGet(string tableName)
 {
     if (!tableExist(tableName)) return 0;
@@ -459,11 +439,9 @@ int API::recordNumGet(string tableName)
     return cm->getRecordNum(tableName);
 }
 
-/**
- *
- * get the size of a record in table
- * @param tableName: name of table
- */
+//返回表中某条记录的大小
+//tableName: name of table
+
 int API::recordSizeGet(string tableName)
 {
     if (!tableExist(tableName)) return 0;
@@ -471,11 +449,10 @@ int API::recordSizeGet(string tableName)
     return cm->calcuteLenth(tableName);
 }
 
-/**
- *
- * get the size of a type
- * @param type:  type of attribute
- */
+//返回类型的存储空间大小
+//get the size of a type
+//type:  type of attribute
+
 int API::typeSizeGet(int type)
 {
     return cm->calcuteLenth2(type);
